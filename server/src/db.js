@@ -16,8 +16,19 @@ export let pool = null;
  * then seed a default admin account and a welcome post.
  */
 export async function initDatabase() {
-  // Connect without selecting a database so we can create it if missing
-  const conn = await mysql.createConnection(config);
+  // Connect without selecting a database so we can create it if missing.
+  // Retry: in Docker, MySQL often starts slower than the Node container.
+  let conn;
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    try {
+      conn = await mysql.createConnection(config);
+      break;
+    } catch (err) {
+      if (attempt === 20) throw err;
+      console.log(`MySQL 还没就绪，${attempt}/20 次重试中... (${err.code || err.message})`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
   await conn.query(
     `CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
   );
