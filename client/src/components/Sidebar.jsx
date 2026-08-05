@@ -33,7 +33,7 @@ export default function Sidebar() {
   if (location.pathname.startsWith('/admin')) return null;
 
   return (
-    <aside className="hidden lg:block space-y-5 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+    <aside className="hidden lg:block space-y-5">
       {/* Blogger card */}
       <div className={`${cardCls} text-center`}>
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-gray-900 to-gray-600 text-white flex items-center justify-center text-2xl font-bold">
