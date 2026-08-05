@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { request, clearAuth, getUsername } from '../lib/api.js';
+import { request, clearAuth, getUsername, getToken } from '../lib/api.js';
 import BackgroundFX from '../components/BackgroundFX.jsx';
 import SakuraFX from '../components/SakuraFX.jsx';
 import DifficultyBadge from '../components/DifficultyBadge.jsx';
@@ -88,6 +88,101 @@ function SiteSettings() {
           </button>
           {message && <span className="text-sm text-gray-500 dark:text-gray-400">{message}</span>}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ResumeManager() {
+  const [resumeUrl, setResumeUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState('');
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    request('/resume')
+      .then(({ url }) => setResumeUrl(url))
+      .catch(() => {});
+  }, []);
+
+  async function handleUpload(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    setMessage('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/resume', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '上传失败');
+      setResumeUrl(data.url);
+      setMessage('✅ 简历已更新');
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm('确定删除当前简历吗？')) return;
+    try {
+      await request('/resume', { method: 'DELETE' });
+      setResumeUrl(null);
+      setMessage('已删除');
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    }
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">📄 简历管理</h2>
+      <div className="glass-card rounded-xl p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="neon-btn text-white text-sm px-5 py-2 rounded-lg font-medium disabled:opacity-50"
+          >
+            {uploading ? '上传中...' : resumeUrl ? '🔄 替换简历 PDF' : '📤 上传简历 PDF'}
+          </button>
+          {resumeUrl && (
+            <>
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                👀 预览当前简历
+              </a>
+              <button
+                onClick={handleDelete}
+                className="text-sm text-red-500 hover:underline"
+              >
+                删除
+              </button>
+            </>
+          )}
+          {message && <span className="text-sm text-gray-500 dark:text-gray-400">{message}</span>}
+          {!resumeUrl && !message && (
+            <span className="text-xs text-gray-400">还没上传简历，上传后首页会出现简历展示入口</span>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          onChange={handleUpload}
+          className="hidden"
+        />
       </div>
     </section>
   );
@@ -300,6 +395,9 @@ export default function Admin() {
 
         {/* Site settings (dynamic texts) */}
         <SiteSettings />
+
+        {/* Resume management */}
+        <ResumeManager />
 
         {/* Guestbook moderation */}
         <h2 className="font-semibold text-gray-900 dark:text-gray-100 mt-10 mb-4">

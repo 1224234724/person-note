@@ -38,6 +38,19 @@ const upload = multer({
   },
 });
 
+// 简历上传：仅 PDF、限 10MB
+const resumeUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+    filename: (_req, _file, cb) => cb(null, `resume-${Date.now()}.pdf`),
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === 'application/pdf' || /\.pdf$/i.test(file.originalname)) cb(null, true);
+    else cb(new Error('只支持 PDF 文件'));
+  },
+});
+
 // ---------- Auth middleware ----------
 
 function getToken(req) {
@@ -330,6 +343,52 @@ app.post('/api/upload', authRequired, (req, res) => {
     if (!req.file) return res.status(400).json({ error: '请选择图片' });
     res.status(201).json({ url: `/uploads/${req.file.filename}` });
   });
+});
+
+// ---------- Resume ----------
+
+const RESUME_KEY = 'resume_url';
+
+// 公开：查询当前简历地址（没有则为 null）
+app.get('/api/resume', async (_req, res) => {
+  const [rows] = await pool.query('SELECT value FROM site_settings WHERE `key` = ?', [
+    RESUME_KEY,
+  ]);
+  res.json({ url: rows.length ? rows[0].value : null });
+});
+
+// 上传/替换简历（旧文件会被删除）
+app.post('/api/resume', authRequired, (req, res) => {
+  resumeUpload.single('file')(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: '请选择 PDF 文件' });
+    const url = `/uploads/${req.file.filename}`;
+    const [rows] = await pool.query('SELECT value FROM site_settings WHERE `key` = ?', [
+      RESUME_KEY,
+    ]);
+    if (rows.length) {
+      const oldFile = path.join(UPLOAD_DIR, path.basename(rows[0].value));
+      fs.unlink(oldFile, () => {});
+    }
+    await pool.query(
+      'INSERT INTO site_settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)',
+      [RESUME_KEY, url]
+    );
+    res.status(201).json({ url });
+  });
+});
+
+// 删除简历
+app.delete('/api/resume', authRequired, async (_req, res) => {
+  const [rows] = await pool.query('SELECT value FROM site_settings WHERE `key` = ?', [
+    RESUME_KEY,
+  ]);
+  if (rows.length) {
+    const oldFile = path.join(UPLOAD_DIR, path.basename(rows[0].value));
+    fs.unlink(oldFile, () => {});
+    await pool.query('DELETE FROM site_settings WHERE `key` = ?', [RESUME_KEY]);
+  }
+  res.json({ ok: true });
 });
 
 // ---------- Start ----------

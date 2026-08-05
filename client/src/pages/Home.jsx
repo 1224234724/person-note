@@ -4,6 +4,7 @@ import { request } from '../lib/api.js';
 import { readingTime, wordCount, collectTags } from '../lib/utils.js';
 import FadeIn from '../components/FadeIn.jsx';
 import DifficultyBadge from '../components/DifficultyBadge.jsx';
+import ResumeModal from '../components/ResumeModal.jsx';
 import { useSite } from '../lib/site.jsx';
 
 function useTyping(words, speed = 110, pause = 1800) {
@@ -58,6 +59,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [resumeUrl, setResumeUrl] = useState(null);
+  const [showResume, setShowResume] = useState(false);
   // 打字机文案来自站点设置，用 | 分隔
   const heroWords = useMemo(
     () => site.typing_words.split('|').map((s) => s.trim()).filter(Boolean),
@@ -73,6 +76,10 @@ export default function Home() {
       .then(setPosts)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    // 简历存在时才显示入口
+    request('/resume')
+      .then(({ url }) => setResumeUrl(url))
+      .catch(() => {});
   }, []);
 
   const tags = useMemo(() => collectTags(posts), [posts]);
@@ -117,6 +124,23 @@ export default function Home() {
           <p className="text-indigo-200/80 mt-3 leading-relaxed text-sm">
             {site.hero_desc}
           </p>
+          {resumeUrl && (
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setShowResume(true)}
+                className="neon-btn text-white text-sm px-5 py-2 rounded-lg font-medium"
+              >
+                📄 查看我的简历
+              </button>
+              <a
+                href={resumeUrl}
+                download
+                className="text-sm px-5 py-2 rounded-lg font-medium bg-white/15 hover:bg-white/25 text-white transition-colors"
+              >
+                ⬇️ 直接下载
+              </a>
+            </div>
+          )}
           <div className="flex gap-8 mt-6">
             <div>
               <p className="text-2xl font-bold">{posts.length}</p>
@@ -232,6 +256,11 @@ export default function Home() {
           </FadeIn>
         ))}
       </div>
+
+      {/* 简历预览弹窗 */}
+      {showResume && resumeUrl && (
+        <ResumeModal url={resumeUrl} onClose={() => setShowResume(false)} />
+      )}
     </div>
   );
 }
