@@ -4,9 +4,7 @@ import { request } from '../lib/api.js';
 import { readingTime, wordCount, collectTags } from '../lib/utils.js';
 import FadeIn from '../components/FadeIn.jsx';
 import DifficultyBadge from '../components/DifficultyBadge.jsx';
-
-// 首页打字机轮播文案
-const HERO_WORDS = ['记录学习、技术与生活 ✦', '探索前端与 JavaScript 的世界', '输出是最好的输入', 'Stay hungry, stay foolish'];
+import { useSite } from '../lib/site.jsx';
 
 function useTyping(words, speed = 110, pause = 1800) {
   const [text, setText] = useState('');
@@ -54,12 +52,18 @@ function DateBadge({ dateStr }) {
 }
 
 export default function Home() {
+  const site = useSite();
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
-  const typed = useTyping(HERO_WORDS);
+  // 打字机文案来自站点设置，用 | 分隔
+  const heroWords = useMemo(
+    () => site.typing_words.split('|').map((s) => s.trim()).filter(Boolean),
+    [site.typing_words]
+  );
+  const typed = useTyping(heroWords);
   // Active tag lives in the URL (?tag=xxx) so the sidebar tag cloud can link here
   const activeTag = searchParams.get('tag') || '';
   const setActiveTag = (tag) => setSearchParams(tag ? { tag } : {});
@@ -105,13 +109,13 @@ export default function Home() {
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-slate-900 text-white p-8 md:p-10 mb-8 card-fx">
           <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-10 w-64 h-64 rounded-full bg-fuchsia-400/20 blur-3xl pointer-events-none" />
-          <h1 className="text-3xl font-bold shimmer-text">你好，欢迎来到我的博客 👋</h1>
+          <h1 className="text-3xl font-bold shimmer-text">{site.hero_title}</h1>
           <p className="text-indigo-100 mt-3 text-lg font-medium h-7">
             {typed}
             <span className="type-caret" />
           </p>
           <p className="text-indigo-200/80 mt-3 leading-relaxed text-sm">
-            这里记录我的学习笔记、技术总结和生活随笔。写作是思考的延伸，希望这里能成为我成长路上的见证。
+            {site.hero_desc}
           </p>
           <div className="flex gap-8 mt-6">
             <div>

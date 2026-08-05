@@ -4,6 +4,7 @@ import ThemeToggle from './ThemeToggle.jsx';
 import BackgroundFX from './BackgroundFX.jsx';
 import ScrollProgress from './ScrollProgress.jsx';
 import SakuraFX from './SakuraFX.jsx';
+import { useSite } from '../lib/site.jsx';
 
 const navItem = ({ isActive }) =>
   `px-3 py-1.5 rounded-md text-sm transition-colors ${
@@ -13,6 +14,7 @@ const navItem = ({ isActive }) =>
   }`;
 
 export default function Layout() {
+  const site = useSite();
   return (
     <div className="min-h-screen flex flex-col transition-colors">
       <ScrollProgress />
@@ -24,7 +26,7 @@ export default function Layout() {
             <span className="w-7 h-7 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-sm font-bold">
               博
             </span>
-            <span className="font-bold text-gray-900 dark:text-gray-100">我的博客</span>
+            <span className="font-bold text-gray-900 dark:text-gray-100">{site.site_name}</span>
           </Link>
           <nav className="flex items-center gap-1">
             <NavLink to="/" className={navItem} end>
@@ -50,10 +52,10 @@ export default function Layout() {
 
       <footer className="border-t border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-900/60 backdrop-blur mt-8">
         <div className="max-w-[1600px] mx-auto px-6 py-8 text-center space-y-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">记录学习、技术与生活</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{site.slogan}</p>
           <p className="text-sm flex items-center justify-center gap-4">
             <a
-              href="https://gitee.com/wangyu-0312"
+              href={site.gitee}
               target="_blank"
               rel="noreferrer"
               className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -61,14 +63,14 @@ export default function Layout() {
               🐙 Gitee
             </a>
             <a
-              href="mailto:1224234724@qq.com"
+              href={`mailto:${site.email}`}
               className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             >
-              ✉️ 1224234724@qq.com
+              ✉️ {site.email}
             </a>
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            © {new Date().getFullYear()} 我的个人博客 · Powered by React + Node.js + MySQL
+            © {new Date().getFullYear()} {site.site_name} · Powered by React + Node.js + MySQL
           </p>
           <p className="text-xs text-gray-300 dark:text-gray-600">
             <Link to="/admin/login" className="hover:text-gray-500 transition-colors">

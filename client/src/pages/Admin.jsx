@@ -4,9 +4,94 @@ import { request, clearAuth, getUsername } from '../lib/api.js';
 import BackgroundFX from '../components/BackgroundFX.jsx';
 import SakuraFX from '../components/SakuraFX.jsx';
 import DifficultyBadge from '../components/DifficultyBadge.jsx';
+import { useSite } from '../lib/site.jsx';
 
 const cardCls =
   'glass-card rounded-xl divide-y divide-gray-200/60 dark:divide-gray-700/60';
+
+// 站点设置表单的字段定义
+const SITE_FIELDS = [
+  { key: 'nickname', label: '博主昵称', type: 'text' },
+  { key: 'site_name', label: '网站名称', type: 'text' },
+  { key: 'slogan', label: '网站标语', type: 'text' },
+  { key: 'motto', label: '个性签名', type: 'text' },
+  { key: 'identity', label: '身份标签', type: 'text' },
+  { key: 'hero_title', label: '首页大标题', type: 'text' },
+  { key: 'typing_words', label: '打字机文案（多条用 | 分隔）', type: 'text' },
+  { key: 'intro', label: '关于页自我介绍', type: 'textarea' },
+  { key: 'hero_desc', label: '首页介绍文案', type: 'textarea' },
+  { key: 'gitee', label: 'Gitee 主页地址', type: 'text' },
+  { key: 'email', label: '联系邮箱', type: 'text' },
+];
+
+function SiteSettings() {
+  const site = useSite();
+  const [form, setForm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    setForm(Object.fromEntries(SITE_FIELDS.map(({ key }) => [key, site[key] || ''])));
+  }, [site]);
+
+  if (!form) return null;
+
+  async function handleSave() {
+    setSaving(true);
+    setMessage('');
+    try {
+      await request('/site', { method: 'PUT', body: form });
+      await site.reloadSite();
+      setMessage('✅ 已保存，全站文案已同步更新');
+    } catch (e) {
+      setMessage(`❌ 保存失败：${e.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        🎨 站点设置（昵称 / 文案 / 联系方式）
+      </h2>
+      <div className="glass-card rounded-xl p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          {SITE_FIELDS.map(({ key, label, type }) => (
+            <label key={key} className={type === 'textarea' ? 'md:col-span-2' : ''}>
+              <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</span>
+              {type === 'textarea' ? (
+                <textarea
+                  value={form[key]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  rows={2}
+                  className="w-full bg-white/70 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={form[key]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  className="w-full bg-white/70 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              )}
+            </label>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="neon-btn text-white text-sm px-5 py-2 rounded-lg font-medium disabled:opacity-50"
+          >
+            {saving ? '保存中...' : '💾 保存站点设置'}
+          </button>
+          {message && <span className="text-sm text-gray-500 dark:text-gray-400">{message}</span>}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -195,6 +280,9 @@ export default function Admin() {
             </div>
           ))}
         </div>
+
+        {/* Site settings (dynamic texts) */}
+        <SiteSettings />
       </main>
     </div>
   );

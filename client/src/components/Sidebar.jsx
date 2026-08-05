@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { request } from '../lib/api.js';
 import { collectTags, formatDate, wordCount } from '../lib/utils.js';
+import { useSite } from '../lib/site.jsx';
 
 const cardCls =
   'bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 card-fx';
@@ -9,6 +10,7 @@ const titleCls = 'font-semibold text-gray-900 dark:text-gray-100 text-sm mb-3';
 
 export default function Sidebar() {
   const location = useLocation();
+  const site = useSite();
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
@@ -38,18 +40,18 @@ export default function Sidebar() {
       <div className={`${cardCls} text-center`}>
         <img
           src="/avatar.jpg"
-          alt="ぃ你若不离丶"
+          alt={site.nickname}
           className="w-20 h-20 mx-auto rounded-full object-cover ring-2 ring-indigo-300 dark:ring-purple-600 avatar-glow"
         />
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 mt-3">ぃ你若不离丶</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mt-3">{site.nickname}</h2>
         <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-          记录学习、技术与生活
+          {site.slogan}
           <br />
-          输出是最好的输入
+          {site.motto}
         </p>
         <div className="flex justify-center gap-2 mt-3">
           <a
-            href="https://gitee.com/wangyu-0312"
+            href={site.gitee}
             target="_blank"
             rel="noreferrer"
             className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
@@ -57,7 +59,7 @@ export default function Sidebar() {
             🐙 Gitee
           </a>
           <a
-            href="mailto:1224234724@qq.com"
+            href={`mailto:${site.email}`}
             className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
           >
             ✉️ 邮箱
@@ -139,7 +141,7 @@ export default function Sidebar() {
         <ul className="space-y-2 text-sm">
           <li>
             <a
-              href="https://gitee.com/wangyu-0312/person-note"
+              href={`${site.gitee}/person-note`}
               target="_blank"
               rel="noreferrer"
               className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

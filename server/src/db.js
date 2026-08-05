@@ -74,6 +74,35 @@ export async function initDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      \`key\` VARCHAR(50) PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  // Default site texts (editable from the admin panel)
+  const defaultSettings = {
+    site_name: '我的博客',
+    nickname: 'ぃ你若不离丶',
+    slogan: '记录学习、技术与生活',
+    motto: '输出是最好的输入',
+    identity: '前端开发学习者 / 终身学习者',
+    intro:
+      '你好，欢迎来到我的个人博客！这里记录我的学习笔记、技术总结和生活随笔。相信输出是最好的输入，写下来才能真正想明白。',
+    hero_title: '你好，欢迎来到我的博客 👋',
+    hero_desc: '这里记录我的学习笔记、技术总结和生活随笔。写作是思考的延伸，希望这里能成为我成长路上的见证。',
+    typing_words: '记录学习、技术与生活 ✦|探索前端与 JavaScript 的世界|输出是最好的输入|Stay hungry, stay foolish',
+    gitee: 'https://gitee.com/wangyu-0312',
+    email: '1224234724@qq.com',
+  };
+  const [[{ c: settingCount }]] = await pool.query('SELECT COUNT(*) AS c FROM site_settings');
+  if (settingCount === 0) {
+    for (const [key, value] of Object.entries(defaultSettings)) {
+      await pool.query('INSERT INTO site_settings (`key`, value) VALUES (?, ?)', [key, value]);
+    }
+  }
+
   // Default admin account: wangyu / hhxxttxs (please change after deployment)
   const [[{ c: userCount }]] = await pool.query('SELECT COUNT(*) AS c FROM users');
   if (userCount === 0) {

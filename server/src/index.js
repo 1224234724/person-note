@@ -211,6 +211,29 @@ app.get('/api/stats', authRequired, async (_req, res) => {
   res.json({ total: t.c, published: p.c, draft: t.c - p.c });
 });
 
+// ---------- Site settings (dynamic texts) ----------
+
+app.get('/api/site', async (_req, res) => {
+  const [rows] = await pool.query('SELECT `key`, value FROM site_settings');
+  res.json(Object.fromEntries(rows.map((r) => [r.key, r.value])));
+});
+
+app.put('/api/site', authRequired, async (req, res) => {
+  const body = req.body || {};
+  const entries = Object.entries(body).filter(
+    ([k, v]) => typeof k === 'string' && typeof v === 'string'
+  );
+  if (entries.length === 0) return res.status(400).json({ error: '没有可保存的设置' });
+  for (const [key, value] of entries) {
+    await pool.query(
+      'INSERT INTO site_settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)',
+      [key.slice(0, 50), value]
+    );
+  }
+  const [rows] = await pool.query('SELECT `key`, value FROM site_settings');
+  res.json(Object.fromEntries(rows.map((r) => [r.key, r.value])));
+});
+
 // ---------- Start ----------
 
 initDatabase()
