@@ -4,7 +4,7 @@ import { request } from '../lib/api.js';
 import { collectTags, formatDate, wordCount } from '../lib/utils.js';
 
 const cardCls =
-  'bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5';
+  'bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 card-fx';
 const titleCls = 'font-semibold text-gray-900 dark:text-gray-100 text-sm mb-3';
 
 export default function Sidebar() {
@@ -47,6 +47,22 @@ export default function Sidebar() {
           <br />
           输出是最好的输入
         </p>
+        <div className="flex justify-center gap-2 mt-3">
+          <a
+            href="https://gitee.com/wangyu-0312"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
+          >
+            🐙 Gitee
+          </a>
+          <a
+            href="mailto:1224234724@qq.com"
+            className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
+          >
+            ✉️ 邮箱
+          </a>
+        </div>
         <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <div>
             <p className="font-bold text-gray-900 dark:text-gray-100">{posts.length}</p>

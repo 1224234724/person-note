@@ -49,8 +49,15 @@ export default function About() {
 
         <h2>联系方式</h2>
         <ul>
-          <li>GitHub：（填上你的链接）</li>
-          <li>邮箱：（填上你的邮箱）</li>
+          <li>
+            Gitee：
+            <a href="https://gitee.com/wangyu-0312" target="_blank" rel="noreferrer">
+              gitee.com/wangyu-0312
+            </a>
+          </li>
+          <li>
+            邮箱：<a href="mailto:1224234724@qq.com">1224234724@qq.com</a>
+          </li>
         </ul>
       </div>
     </div>

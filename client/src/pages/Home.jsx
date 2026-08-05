@@ -2,6 +2,43 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '../lib/api.js';
 import { readingTime, wordCount, collectTags } from '../lib/utils.js';
+import FadeIn from '../components/FadeIn.jsx';
+
+// 首页打字机轮播文案
+const HERO_WORDS = ['记录学习、技术与生活 ✦', '探索前端与 JavaScript 的世界', '输出是最好的输入', 'Stay hungry, stay foolish'];
+
+function useTyping(words, speed = 110, pause = 1800) {
+  const [text, setText] = useState('');
+  useEffect(() => {
+    let word = 0;
+    let char = 0;
+    let deleting = false;
+    let timer;
+    const tick = () => {
+      const w = words[word];
+      if (!deleting) {
+        char++;
+        if (char >= w.length) {
+          deleting = true;
+          setText(w);
+          timer = setTimeout(tick, pause);
+          return;
+        }
+      } else {
+        char--;
+        if (char <= 0) {
+          deleting = false;
+          word = (word + 1) % words.length;
+        }
+      }
+      setText(w.slice(0, char));
+      timer = setTimeout(tick, deleting ? 45 : speed);
+    };
+    timer = setTimeout(tick, speed);
+    return () => clearTimeout(timer);
+  }, [words, speed, pause]);
+  return text;
+}
 
 function DateBadge({ dateStr }) {
   const d = new Date(dateStr);
@@ -21,6 +58,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
+  const typed = useTyping(HERO_WORDS);
   // Active tag lives in the URL (?tag=xxx) so the sidebar tag cloud can link here
   const activeTag = searchParams.get('tag') || '';
   const setActiveTag = (tag) => setSearchParams(tag ? { tag } : {});
@@ -57,28 +95,34 @@ export default function Home() {
   return (
     <div>
       {/* Hero section */}
-      <section className="rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white p-8 md:p-10 mb-8">
-        <h1 className="text-3xl font-bold">你好，欢迎来到我的博客 👋</h1>
-        <p className="text-gray-300 mt-3 leading-relaxed">
-          这里记录我的学习笔记、技术总结和生活随笔。
-          <br />
-          写作是思考的延伸，希望这里能成为我成长路上的见证。
-        </p>
-        <div className="flex gap-8 mt-6">
-          <div>
-            <p className="text-2xl font-bold">{posts.length}</p>
-            <p className="text-xs text-gray-400 mt-0.5">篇文章</p>
+      <FadeIn>
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-slate-900 text-white p-8 md:p-10 mb-8 card-fx">
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-10 w-64 h-64 rounded-full bg-fuchsia-400/20 blur-3xl pointer-events-none" />
+          <h1 className="text-3xl font-bold">你好，欢迎来到我的博客 👋</h1>
+          <p className="text-indigo-100 mt-3 text-lg font-medium h-7">
+            {typed}
+            <span className="type-caret" />
+          </p>
+          <p className="text-indigo-200/80 mt-3 leading-relaxed text-sm">
+            这里记录我的学习笔记、技术总结和生活随笔。写作是思考的延伸，希望这里能成为我成长路上的见证。
+          </p>
+          <div className="flex gap-8 mt-6">
+            <div>
+              <p className="text-2xl font-bold">{posts.length}</p>
+              <p className="text-xs text-indigo-200/70 mt-0.5">篇文章</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{tags.length}</p>
+              <p className="text-xs text-indigo-200/70 mt-0.5">个标签</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{totalChars}</p>
+              <p className="text-xs text-indigo-200/70 mt-0.5">总字数</p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold">{tags.length}</p>
-            <p className="text-xs text-gray-400 mt-0.5">个标签</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{totalChars}</p>
-            <p className="text-xs text-gray-400 mt-0.5">总字数</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Search + tag filter */}
       <section className="mb-6 space-y-3">
@@ -126,37 +170,36 @@ export default function Home() {
       )}
 
       <div className="space-y-5">
-        {filtered.map((post) => (
-          <article
-            key={post.id}
-            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex gap-5 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all"
-          >
-            <DateBadge dateStr={post.created_at} />
-            <div className="min-w-0 flex-1">
-              <Link to={`/post/${post.id}`}>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  {post.title}
-                </h2>
-              </Link>
-              <p className="text-gray-500 text-sm mt-1.5 leading-relaxed line-clamp-2">
-                {post.summary || post.content.slice(0, 100)}
-              </p>
-              <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-400">
-                <span>约 {readingTime(post.content)} 分钟读完</span>
-                <span>·</span>
-                <span>{wordCount(post.content)} 字</span>
-                {post.tags.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => setActiveTag(tag)}
-                    className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    # {tag}
-                  </button>
-                ))}
+        {filtered.map((post, idx) => (
+          <FadeIn key={post.id} delay={Math.min(idx, 5) * 60}>
+            <article className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex gap-5 card-fx hover:border-indigo-300 dark:hover:border-indigo-700">
+              <DateBadge dateStr={post.created_at} />
+              <div className="min-w-0 flex-1">
+                <Link to={`/post/${post.id}`}>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    {post.title}
+                  </h2>
+                </Link>
+                <p className="text-gray-500 text-sm mt-1.5 leading-relaxed line-clamp-2">
+                  {post.summary || post.content.slice(0, 100)}
+                </p>
+                <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-400">
+                  <span>约 {readingTime(post.content)} 分钟读完</span>
+                  <span>·</span>
+                  <span>{wordCount(post.content)} 字</span>
+                  {post.tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setActiveTag(tag)}
+                      className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-900 dark:hover:text-indigo-300 transition-colors"
+                    >
+                      # {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          </FadeIn>
         ))}
       </div>
     </div>

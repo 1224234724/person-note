@@ -3,6 +3,65 @@
 /* Class-based dark mode: `dark:` utilities apply when <html> has .dark */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ===== Cool background & effects ===== */
+body {
+  background-color: #f9fafb;
+  background-image: radial-gradient(at top left, rgba(99, 102, 241, 0.08), transparent 55%);
+}
+.dark body {
+  background-color: #030712;
+  background-image: radial-gradient(at top left, rgba(139, 92, 246, 0.14), transparent 55%);
+}
+
+/* Floating gradient blobs */
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -60px) scale(1.08); }
+  66% { transform: translate(-30px, 30px) scale(0.94); }
+}
+.bg-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  animation: blob-float 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Card hover lift + glow */
+.card-fx {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-fx:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 34px -12px rgba(99, 102, 241, 0.35);
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Typing caret */
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.type-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: currentColor;
+  margin-left: 3px;
+  vertical-align: -0.1em;
+  animation: caret-blink 1s step-end infinite;
+}
+
 /* Markdown article typography */
 .markdown-body {
   line-height: 1.8;
