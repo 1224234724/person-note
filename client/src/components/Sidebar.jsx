@@ -36,9 +36,11 @@ export default function Sidebar() {
     <aside className="hidden lg:block space-y-5">
       {/* Blogger card */}
       <div className={`${cardCls} text-center`}>
-        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-gray-900 to-gray-600 text-white flex items-center justify-center text-2xl font-bold">
-          我
-        </div>
+        <img
+          src="/avatar.jpg"
+          alt="ぃ你若不离丶"
+          className="w-20 h-20 mx-auto rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+        />
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mt-3">ぃ你若不离丶</h2>
         <p className="text-xs text-gray-400 mt-1 leading-relaxed">
           记录学习、技术与生活

@@ -7,9 +7,11 @@ export default function About() {
 
       {/* Profile card */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-900 to-gray-600 text-white flex items-center justify-center text-3xl font-bold shrink-0">
-          我
-        </div>
+        <img
+          src="/avatar.jpg"
+          alt="ぃ你若不离丶"
+          className="w-24 h-24 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 shrink-0"
+        />
         <div className="text-center md:text-left">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">ぃ你若不离丶</h2>
           <p className="text-sm text-gray-400 mt-0.5">前端开发学习者 / 终身学习者</p>
