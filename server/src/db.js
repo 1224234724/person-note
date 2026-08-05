@@ -74,12 +74,12 @@ export async function initDatabase() {
     )
   `);
 
-  // Default admin account: admin / admin123 (please change after first login)
+  // Default admin account: wangyu / hhxxttxs (please change after deployment)
   const [[{ c: userCount }]] = await pool.query('SELECT COUNT(*) AS c FROM users');
   if (userCount === 0) {
     await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [
-      'admin',
-      bcrypt.hashSync('admin123', 10),
+      'wangyu',
+      bcrypt.hashSync('hhxxttxs', 10),
     ]);
   }
 

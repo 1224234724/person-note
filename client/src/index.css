@@ -84,6 +84,63 @@ body {
   animation: avatar-glow 3s ease-in-out infinite;
 }
 
+/* 二次元樱花飘落 */
+@keyframes sakura-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.7; }
+  100% {
+    transform: translate3d(-10vw, 108vh, 0) rotate(340deg);
+    opacity: 0;
+  }
+}
+.sakura-petal {
+  position: absolute;
+  top: 0;
+  background: linear-gradient(135deg, #fbcfe8, #f472b6);
+  border-radius: 150% 0 150% 0;
+  box-shadow: 0 0 6px rgba(244, 114, 182, 0.5);
+  animation-name: sakura-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+}
+.dark .sakura-petal {
+  background: linear-gradient(135deg, #f9a8d4, #c026d3);
+  box-shadow: 0 0 8px rgba(217, 70, 239, 0.6);
+}
+
+/* 玻璃拟态卡片 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.18);
+}
+.dark .glass-card {
+  background: rgba(17, 24, 39, 0.6);
+  border-color: rgba(139, 92, 246, 0.25);
+  box-shadow: 0 8px 40px rgba(139, 92, 246, 0.28);
+}
+
+/* 霓虹渐变按钮 */
+.neon-btn {
+  background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #6366f1);
+  background-size: 300% auto;
+  transition: background-position 0.5s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+.neon-btn:hover:not(:disabled) {
+  background-position: 100% center;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+.neon-btn:disabled {
+  opacity: 0.6;
+}
+
 /* Markdown article typography */
 .markdown-body {
   line-height: 1.8;

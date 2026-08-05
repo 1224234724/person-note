@@ -27,7 +27,7 @@ async function main() {
   const login = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password: 'admin123' }),
+    body: JSON.stringify({ username: 'wangyu', password: 'hhxxttxs' }),
   });
   if (!login.ok) throw new Error('Login failed — is the backend running?');
   const { token } = await login.json();

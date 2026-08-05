@@ -3,6 +3,7 @@ import Sidebar from './Sidebar.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
 import BackgroundFX from './BackgroundFX.jsx';
 import ScrollProgress from './ScrollProgress.jsx';
+import SakuraFX from './SakuraFX.jsx';
 
 const navItem = ({ isActive }) =>
   `px-3 py-1.5 rounded-md text-sm transition-colors ${
@@ -16,6 +17,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col transition-colors">
       <ScrollProgress />
       <BackgroundFX />
+      <SakuraFX count={12} />
       <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
