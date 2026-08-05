@@ -11,6 +11,9 @@ dist/
 # Logs
 *.log
 
+# Uploaded images
+server/uploads/
+
 # Editor / OS
 .vscode/
 .idea/

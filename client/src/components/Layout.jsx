@@ -35,6 +35,9 @@ export default function Layout() {
             <NavLink to="/archive" className={navItem}>
               归档
             </NavLink>
+            <NavLink to="/messages" className={navItem}>
+              留言板
+            </NavLink>
             <NavLink to="/about" className={navItem}>
               关于
             </NavLink>

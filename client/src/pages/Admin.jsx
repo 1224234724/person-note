@@ -98,14 +98,21 @@ export default function Admin() {
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState(null);
   const [comments, setComments] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
-    Promise.all([request('/posts'), request('/stats'), request('/comments')])
-      .then(([list, s, cs]) => {
+    Promise.all([
+      request('/posts'),
+      request('/stats'),
+      request('/comments'),
+      request('/messages'),
+    ])
+      .then(([list, s, cs, ms]) => {
         setPosts(list);
         setStats(s);
         setComments(cs);
+        setMessages(ms);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -131,6 +138,16 @@ export default function Admin() {
     if (!window.confirm(`确定删除 ${comment.nickname} 的评论吗？`)) return;
     try {
       await request(`/comments/${comment.id}`, { method: 'DELETE' });
+      load();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function handleDeleteMessage(m) {
+    if (!window.confirm(`确定删除 ${m.nickname} 的留言吗？`)) return;
+    try {
+      await request(`/messages/${m.id}`, { method: 'DELETE' });
       load();
     } catch (e) {
       alert(e.message);
@@ -283,6 +300,40 @@ export default function Admin() {
 
         {/* Site settings (dynamic texts) */}
         <SiteSettings />
+
+        {/* Guestbook moderation */}
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100 mt-10 mb-4">
+          📮 留言管理（{messages.length}）
+        </h2>
+        <div className={cardCls}>
+          {messages.length === 0 && (
+            <p className="text-gray-400 text-sm text-center py-10">还没有留言</p>
+          )}
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              className="p-4 flex items-start justify-between gap-4 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors"
+            >
+              <div className="min-w-0">
+                <p className="text-sm text-gray-900 dark:text-gray-100">
+                  <span className="font-medium">{m.nickname}</span>
+                  <span className="text-xs text-gray-400 ml-2">
+                    {new Date(m.created_at).toLocaleString('zh-CN')}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 break-words">
+                  {m.content}
+                </p>
+              </div>
+              <button
+                onClick={() => handleDeleteMessage(m)}
+                className="text-sm text-red-500 hover:underline shrink-0"
+              >
+                删除
+              </button>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );

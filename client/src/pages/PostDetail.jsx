@@ -8,6 +8,17 @@ import { request } from '../lib/api.js';
 import { formatDate, readingTime, wordCount } from '../lib/utils.js';
 import Comments from '../components/Comments.jsx';
 import DifficultyBadge from '../components/DifficultyBadge.jsx';
+import Danmaku from '../components/Danmaku.jsx';
+
+const LIKED_KEY = 'blog_liked_posts';
+
+function getLikedIds() {
+  try {
+    return JSON.parse(localStorage.getItem(LIKED_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
 
 /** Extract h1~h3 headings from markdown, skipping fenced code blocks */
 function parseToc(markdown) {
@@ -67,6 +78,11 @@ export default function PostDetail() {
       .then(setPost)
       .catch((e) => setError(e.message));
 
+    // 浏览量 +1（打开文章页即计数）
+    request(`/posts/${id}/view`, { method: 'POST' })
+      .then(({ views }) => setPost((p) => (p ? { ...p, views } : p)))
+      .catch(() => {});
+
     // Figure out prev/next posts from the full list
     request('/posts')
       .then((list) => {
@@ -77,6 +93,21 @@ export default function PostDetail() {
       })
       .catch(() => {});
   }, [id]);
+
+  const liked = getLikedIds().includes(Number(id));
+
+  async function handleLike() {
+    if (liked) return;
+    try {
+      const { likes } = await request(`/posts/${id}/like`, { method: 'POST' });
+      const ids = getLikedIds();
+      ids.push(Number(id));
+      localStorage.setItem(LIKED_KEY, JSON.stringify(ids));
+      setPost((p) => (p ? { ...p, likes } : p));
+    } catch {
+      /* ignore */
+    }
+  }
 
   const toc = useMemo(() => parseToc(post?.content), [post?.content]);
 
@@ -106,7 +137,20 @@ export default function PostDetail() {
               <span>{wordCount(post.content)} 字</span>
               <span>·</span>
               <span>约 {readingTime(post.content)} 分钟读完</span>
+              <span>·</span>
+              <span>👀 {post.views || 0} 次阅读</span>
               <DifficultyBadge difficulty={post.difficulty} />
+              <button
+                onClick={handleLike}
+                disabled={liked}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  liked
+                    ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-500 cursor-default'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-pink-100 hover:text-pink-500 dark:hover:bg-pink-900/40 dark:hover:text-pink-300 active:scale-95'
+                }`}
+              >
+                {liked ? '❤️ 已点赞' : '🤍 点赞'} {post.likes || 0}
+              </button>
               {post.tags.map((tag) => (
                 <span
                   key={tag}
@@ -117,6 +161,17 @@ export default function PostDetail() {
               ))}
             </div>
           </header>
+
+          {/* 弹幕条：评论飘屏 */}
+          <Danmaku postId={post.id} />
+
+          {post.cover && (
+            <img
+              src={post.cover}
+              alt={post.title}
+              className="w-full max-h-[420px] object-cover rounded-xl border border-gray-200 dark:border-gray-800 mb-6"
+            />
+          )}
 
           <div
             ref={articleRef}

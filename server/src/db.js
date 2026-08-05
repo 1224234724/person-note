@@ -48,6 +48,9 @@ export async function initDatabase() {
       tags VARCHAR(255) NOT NULL DEFAULT '',
       published TINYINT(1) NOT NULL DEFAULT 1,
       difficulty INT NOT NULL DEFAULT 50,
+      views INT NOT NULL DEFAULT 0,
+      likes INT NOT NULL DEFAULT 0,
+      cover VARCHAR(500) NOT NULL DEFAULT '',
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
@@ -61,6 +64,23 @@ export async function initDatabase() {
   );
   if (hasDifficulty === 0) {
     await pool.query('ALTER TABLE posts ADD COLUMN difficulty INT NOT NULL DEFAULT 50');
+  }
+
+  // Migration: add views / likes / cover columns to old tables
+  const [postCols] = await pool.query(
+    `SELECT column_name FROM information_schema.columns
+     WHERE table_schema = ? AND table_name = 'posts'`,
+    [DB_NAME]
+  );
+  const cols = new Set(postCols.map((r) => r.COLUMN_NAME || r.column_name));
+  if (!cols.has('views')) {
+    await pool.query('ALTER TABLE posts ADD COLUMN views INT NOT NULL DEFAULT 0');
+  }
+  if (!cols.has('likes')) {
+    await pool.query('ALTER TABLE posts ADD COLUMN likes INT NOT NULL DEFAULT 0');
+  }
+  if (!cols.has('cover')) {
+    await pool.query("ALTER TABLE posts ADD COLUMN cover VARCHAR(500) NOT NULL DEFAULT ''");
   }
 
   await pool.query(`
@@ -78,6 +98,15 @@ export async function initDatabase() {
     CREATE TABLE IF NOT EXISTS site_settings (
       \`key\` VARCHAR(50) PRIMARY KEY,
       value TEXT NOT NULL
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      nickname VARCHAR(50) NOT NULL,
+      content VARCHAR(500) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

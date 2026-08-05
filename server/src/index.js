@@ -3,7 +3,15 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { pool, initDatabase } from './db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,6 +19,24 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+// 上传的图片通过 /uploads/xxx 访问
+app.use('/uploads', express.static(UPLOAD_DIR));
+
+// 图片上传：限制 5MB、仅图片类型，文件名加时间戳防冲突
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).slice(0, 10) || '.png';
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (/^image\/(png|jpe?g|gif|webp|svg\+xml)$/.test(file.mimetype)) cb(null, true);
+    else cb(new Error('只支持图片文件'));
+  },
+});
 
 // ---------- Auth middleware ----------
 
@@ -106,13 +132,20 @@ app.get('/api/posts/:id', authOptional, async (req, res) => {
 });
 
 app.post('/api/posts', authRequired, async (req, res) => {
-  const { title, summary = '', content = '', tags = [], published = 1, difficulty = 50 } =
-    req.body || {};
+  const {
+    title,
+    summary = '',
+    content = '',
+    tags = [],
+    published = 1,
+    difficulty = 50,
+    cover = '',
+  } = req.body || {};
   if (!title?.trim()) return res.status(400).json({ error: '标题不能为空' });
   const tagStr = Array.isArray(tags) ? tags.join(',') : String(tags);
   const [result] = await pool.query(
-    'INSERT INTO posts (title, summary, content, tags, published, difficulty) VALUES (?, ?, ?, ?, ?, ?)',
-    [title.trim(), summary, content, tagStr, published ? 1 : 0, Number(difficulty) || 50]
+    'INSERT INTO posts (title, summary, content, tags, published, difficulty, cover) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [title.trim(), summary, content, tagStr, published ? 1 : 0, Number(difficulty) || 50, cover]
   );
   const [rows] = await pool.query('SELECT * FROM posts WHERE id = ?', [result.insertId]);
   res.status(201).json(serializePost(rows[0]));
@@ -121,7 +154,7 @@ app.post('/api/posts', authRequired, async (req, res) => {
 app.put('/api/posts/:id', authRequired, async (req, res) => {
   const [existing] = await pool.query('SELECT id FROM posts WHERE id = ?', [req.params.id]);
   if (existing.length === 0) return res.status(404).json({ error: '文章不存在' });
-  const { title, summary = '', content = '', tags = [], published = 1, difficulty, created_at } =
+  const { title, summary = '', content = '', tags = [], published = 1, difficulty, created_at, cover } =
     req.body || {};
   if (!title?.trim()) return res.status(400).json({ error: '标题不能为空' });
   const tagStr = Array.isArray(tags) ? tags.join(',') : String(tags);
@@ -131,6 +164,10 @@ app.put('/api/posts/:id', authRequired, async (req, res) => {
   if (typeof difficulty === 'number') {
     sets.push('difficulty = ?');
     params.push(difficulty);
+  }
+  if (typeof cover === 'string') {
+    sets.push('cover = ?');
+    params.push(cover);
   }
   if (created_at) {
     sets.push('created_at = ?');
@@ -232,6 +269,67 @@ app.put('/api/site', authRequired, async (req, res) => {
   }
   const [rows] = await pool.query('SELECT `key`, value FROM site_settings');
   res.json(Object.fromEntries(rows.map((r) => [r.key, r.value])));
+});
+
+// ---------- Views / Likes ----------
+
+// 浏览量：每次打开文章页 +1
+app.post('/api/posts/:id/view', async (req, res) => {
+  const [result] = await pool.query(
+    'UPDATE posts SET views = views + 1 WHERE id = ? AND published = 1',
+    [req.params.id]
+  );
+  if (result.affectedRows === 0) return res.status(404).json({ error: '文章不存在' });
+  const [[{ views }]] = await pool.query('SELECT views FROM posts WHERE id = ?', [req.params.id]);
+  res.json({ views });
+});
+
+// 点赞 +1
+app.post('/api/posts/:id/like', async (req, res) => {
+  const [result] = await pool.query(
+    'UPDATE posts SET likes = likes + 1 WHERE id = ? AND published = 1',
+    [req.params.id]
+  );
+  if (result.affectedRows === 0) return res.status(404).json({ error: '文章不存在' });
+  const [[{ likes }]] = await pool.query('SELECT likes FROM posts WHERE id = ?', [req.params.id]);
+  res.json({ likes });
+});
+
+// ---------- Messages (guestbook) ----------
+
+app.get('/api/messages', async (_req, res) => {
+  const [rows] = await pool.query('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
+  res.json(rows);
+});
+
+app.post('/api/messages', async (req, res) => {
+  const { nickname, content } = req.body || {};
+  if (!nickname?.trim() || !content?.trim()) {
+    return res.status(400).json({ error: '昵称和留言内容不能为空' });
+  }
+  if (nickname.trim().length > 50) return res.status(400).json({ error: '昵称最长 50 个字符' });
+  if (content.trim().length > 500) return res.status(400).json({ error: '留言最长 500 个字符' });
+  const [result] = await pool.query('INSERT INTO messages (nickname, content) VALUES (?, ?)', [
+    nickname.trim(),
+    content.trim(),
+  ]);
+  const [rows] = await pool.query('SELECT * FROM messages WHERE id = ?', [result.insertId]);
+  res.status(201).json(rows[0]);
+});
+
+app.delete('/api/messages/:id', authRequired, async (req, res) => {
+  await pool.query('DELETE FROM messages WHERE id = ?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ---------- Image upload ----------
+
+app.post('/api/upload', authRequired, (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: '请选择图片' });
+    res.status(201).json({ url: `/uploads/${req.file.filename}` });
+  });
 });
 
 // ---------- Start ----------

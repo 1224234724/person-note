@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
-import { request } from '../lib/api.js';
+import { request, getToken } from '../lib/api.js';
 import BackgroundFX from '../components/BackgroundFX.jsx';
 import SakuraFX from '../components/SakuraFX.jsx';
 
@@ -33,6 +33,7 @@ const TOOLBAR = [
   { icon: '▤', title: '代码块', type: 'block', text: '\n```js\n// 代码写在这里\n```\n' },
   { icon: '🔗', title: '插入链接', type: 'wrap', before: '[', after: '](https://)', ph: '链接文字' },
   { icon: '🖼', title: '插入图片', type: 'block', text: '\n![图片描述](https://)\n' },
+  { icon: '📤', title: '上传图片并插入正文', type: 'upload' },
   { icon: '❝', title: '引用', type: 'line', prefix: '> ' },
   { icon: '•', title: '无序列表', type: 'line', prefix: '- ' },
   { icon: '1.', title: '有序列表', type: 'line', prefix: '1. ' },
@@ -47,12 +48,14 @@ export default function AdminEdit() {
   const navigate = useNavigate();
   const isEdit = !!id;
   const taRef = useRef(null);
+  const fileRef = useRef(null);
 
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [tags, setTags] = useState('');
   const [content, setContent] = useState('');
   const [difficulty, setDifficulty] = useState(50);
+  const [cover, setCover] = useState('');
   const [published, setPublished] = useState(true);
   const [view, setView] = useState('edit'); // edit | preview | split
   const [saving, setSaving] = useState(false);
@@ -70,6 +73,7 @@ export default function AdminEdit() {
         setTags(post.tags.join(','));
         setContent(post.content);
         setDifficulty(post.difficulty ?? 50);
+        setCover(post.cover || '');
         setPublished(post.published === 1);
       })
       .catch((e) => setError(e.message));
@@ -88,6 +92,7 @@ export default function AdminEdit() {
         setTags(draft.tags || '');
         setContent(draft.content || '');
         setDifficulty(draft.difficulty ?? 50);
+        setCover(draft.cover || '');
         setPublished(draft.published ?? true);
         setDraftMsg('📄 已恢复本地草稿');
       }
@@ -103,12 +108,12 @@ export default function AdminEdit() {
       if (!title && !content) return;
       localStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({ title, summary, tags, content, difficulty, published })
+        JSON.stringify({ title, summary, tags, content, difficulty, cover, published })
       );
       setSavedAt(new Date().toLocaleTimeString('zh-CN'));
     }, 3000);
     return () => clearTimeout(timer);
-  }, [isEdit, title, summary, tags, content, difficulty, published]);
+  }, [isEdit, title, summary, tags, content, difficulty, cover, published]);
 
   async function handleSave() {
     setError('');
@@ -127,6 +132,7 @@ export default function AdminEdit() {
         .filter(Boolean),
       published: published ? 1 : 0,
       difficulty,
+      cover,
     };
     try {
       if (isEdit) {
@@ -143,8 +149,36 @@ export default function AdminEdit() {
     }
   }
 
+  // 上传图片到后端，并把 Markdown 图片语法插入到光标处
+  async function handleUploadFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '上传失败');
+      const md = `\n![${file.name}](${data.url})\n`;
+      const ta = taRef.current;
+      const pos = ta ? ta.selectionEnd : content.length;
+      setContent((prev) => prev.slice(0, pos) + md + prev.slice(pos));
+    } catch (err) {
+      setError(`图片上传失败：${err.message}`);
+    }
+  }
+
   // 工具栏：在光标处插入 / 包裹 / 加行前缀
   function applyTool(tool) {
+    if (tool.type === 'upload') {
+      fileRef.current?.click();
+      return;
+    }
     const ta = taRef.current;
     if (!ta) return;
     const { selectionStart: start, selectionEnd: end } = ta;
@@ -283,6 +317,25 @@ export default function AdminEdit() {
             </select>
           </div>
         </div>
+
+        {/* 封面图 */}
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={cover}
+            onChange={(e) => setCover(e.target.value)}
+            placeholder="封面图地址（可粘贴图片链接，或点工具栏 📤 上传后复制地址）"
+            className={`${inputCls} flex-1`}
+          />
+          {cover && (
+            <img
+              src={cover}
+              alt="封面预览"
+              className="h-10 w-20 object-cover rounded-md border border-gray-200 dark:border-gray-700"
+            />
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleUploadFile} className="hidden" />
 
         {/* 工具栏 + 视图切换 + 字数统计 */}
         <div className="flex flex-wrap items-center gap-1 bg-white/70 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700 rounded-xl px-2 py-1.5">

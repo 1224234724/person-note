@@ -3,6 +3,7 @@ import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
 import PostDetail from './pages/PostDetail.jsx';
 import Archive from './pages/Archive.jsx';
+import Messages from './pages/Messages.jsx';
 import About from './pages/About.jsx';
 import Login from './pages/Login.jsx';
 import Admin from './pages/Admin.jsx';
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/archive" element={<Archive />} />
+        <Route path="/messages" element={<Messages />} />
         <Route path="/about" element={<About />} />
       </Route>
       <Route path="/admin/login" element={<Login />} />

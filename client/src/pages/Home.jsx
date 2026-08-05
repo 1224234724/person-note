@@ -195,12 +195,26 @@ export default function Home() {
                     {post.title}
                   </h2>
                 </Link>
+                {post.cover && (
+                  <Link to={`/post/${post.id}`} className="block mt-3">
+                    <img
+                      src={post.cover}
+                      alt={post.title}
+                      loading="lazy"
+                      className="w-full max-h-56 object-cover rounded-lg border border-gray-100 dark:border-gray-800"
+                    />
+                  </Link>
+                )}
                 <p className="text-gray-500 text-sm mt-1.5 leading-relaxed line-clamp-2">
                   {post.summary || post.content.slice(0, 100)}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-400">
                   <DifficultyBadge difficulty={post.difficulty} />
                   <span>约 {readingTime(post.content)} 分钟读完</span>
+                  <span>·</span>
+                  <span>👀 {post.views || 0}</span>
+                  <span>·</span>
+                  <span>❤️ {post.likes || 0}</span>
                   <span>·</span>
                   <span>{wordCount(post.content)} 字</span>
                   {post.tags.map((tag) => (
