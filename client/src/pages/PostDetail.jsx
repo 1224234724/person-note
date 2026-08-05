@@ -93,7 +93,7 @@ export default function PostDetail() {
 
   return (
     <article>
-      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_200px] xl:gap-6 items-start">
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_230px] xl:gap-8 items-start">
         <div className="min-w-0">
           <header className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 leading-snug">
