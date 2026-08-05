@@ -49,6 +49,19 @@ export default function Sidebar() {
           <br />
           {site.motto}
         </p>
+        {(site.location || site.job_title) && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            {site.location && <>📍 {site.location}</>}
+            {site.location && site.job_title && ' · '}
+            {site.job_title && <>💼 {site.job_title}</>}
+          </p>
+        )}
+        {site.job_status && (
+          <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            {site.job_status}
+          </span>
+        )}
         <div className="flex justify-center gap-2 mt-3">
           <a
             href={site.gitee}

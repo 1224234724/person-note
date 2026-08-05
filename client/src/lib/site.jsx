@@ -14,6 +14,9 @@ export const SITE_DEFAULTS = {
   typing_words: '记录学习、技术与生活 ✦',
   gitee: '',
   email: '',
+  location: '',
+  job_title: '',
+  job_status: '',
 };
 
 const SiteContext = createContext(SITE_DEFAULTS);

@@ -24,6 +24,24 @@ export default function About() {
         <div className="text-center md:text-left">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{site.nickname}</h2>
           <p className="text-sm text-gray-400 mt-0.5">{site.identity}</p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2 text-xs">
+            {site.location && (
+              <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                📍 {site.location}
+              </span>
+            )}
+            {site.job_title && (
+              <span className="px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                💼 {site.job_title}
+              </span>
+            )}
+            {site.job_status && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                {site.job_status}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 mt-2 leading-relaxed">{site.intro}</p>
         </div>
       </div>

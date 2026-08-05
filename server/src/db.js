@@ -124,12 +124,16 @@ export async function initDatabase() {
     typing_words: '记录学习、技术与生活 ✦|探索前端与 JavaScript 的世界|输出是最好的输入|Stay hungry, stay foolish',
     gitee: 'https://gitee.com/wangyu-0312',
     email: '1224234724@qq.com',
+    location: '江苏南京',
+    job_title: '前端开发/全栈',
+    job_status: '已离职寻找工作中',
   };
-  const [[{ c: settingCount }]] = await pool.query('SELECT COUNT(*) AS c FROM site_settings');
-  if (settingCount === 0) {
-    for (const [key, value] of Object.entries(defaultSettings)) {
-      await pool.query('INSERT INTO site_settings (`key`, value) VALUES (?, ?)', [key, value]);
-    }
+  // Insert only missing keys so admin edits are never overwritten on restart
+  for (const [key, value] of Object.entries(defaultSettings)) {
+    await pool.query(
+      'INSERT INTO site_settings (`key`, value) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM site_settings WHERE `key` = ?)',
+      [key, value, key]
+    );
   }
 
   // Default admin account: wangyu / hhxxttxs (please change after deployment)
