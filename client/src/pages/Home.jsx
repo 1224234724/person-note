@@ -76,15 +76,15 @@ export default function Home() {
     () => posts.reduce((sum, p) => sum + wordCount(p.content), 0),
     [posts]
   );
-  // 按难度从浅到深排序
-  const byDifficulty = useMemo(
-    () => [...posts].sort((a, b) => (a.difficulty ?? 50) - (b.difficulty ?? 50)),
+  // 最新文章排在最上面
+  const byLatest = useMemo(
+    () => [...posts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
     [posts]
   );
 
   const filtered = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
-    return byDifficulty.filter((post) => {
+    return byLatest.filter((post) => {
       if (activeTag && !post.tags.includes(activeTag)) return false;
       if (!kw) return true;
       return (
@@ -93,7 +93,7 @@ export default function Home() {
         post.tags.some((t) => t.toLowerCase().includes(kw))
       );
     });
-  }, [byDifficulty, keyword, activeTag]);
+  }, [byLatest, keyword, activeTag]);
 
   if (loading) return <p className="text-gray-400 text-center py-20">加载中...</p>;
   if (error) return <p className="text-red-500 text-center py-20">出错了：{error}</p>;
@@ -171,7 +171,7 @@ export default function Home() {
       {/* Post list */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold text-gray-900 dark:text-gray-100">📖 全部文章</h2>
-        <span className="text-xs text-gray-400">按难度从浅到深排序，循序渐进 ↓</span>
+        <span className="text-xs text-gray-400">最新发布的文章在最上面 ↓</span>
       </div>
 
       {filtered.length === 0 && (
