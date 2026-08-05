@@ -10,7 +10,7 @@ export default function About() {
         <img
           src="/avatar.jpg"
           alt="ぃ你若不离丶"
-          className="w-24 h-24 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 shrink-0"
+          className="w-24 h-24 rounded-full object-cover ring-2 ring-indigo-300 dark:ring-purple-600 avatar-glow shrink-0"
         />
         <div className="text-center md:text-left">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">ぃ你若不离丶</h2>

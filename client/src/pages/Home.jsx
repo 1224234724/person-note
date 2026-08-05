@@ -99,7 +99,7 @@ export default function Home() {
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-slate-900 text-white p-8 md:p-10 mb-8 card-fx">
           <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-10 w-64 h-64 rounded-full bg-fuchsia-400/20 blur-3xl pointer-events-none" />
-          <h1 className="text-3xl font-bold">你好，欢迎来到我的博客 👋</h1>
+          <h1 className="text-3xl font-bold shimmer-text">你好，欢迎来到我的博客 👋</h1>
           <p className="text-indigo-100 mt-3 text-lg font-medium h-7">
             {typed}
             <span className="type-caret" />

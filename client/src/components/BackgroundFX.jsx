@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 // 全屏炫酷背景：粒子连线画布 + 浮动渐变光斑，自动适配明暗主题
 export default function BackgroundFX() {
   const canvasRef = useRef(null);
+  const glowRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -10,6 +11,7 @@ export default function BackgroundFX() {
     let w, h, raf;
     const COUNT = 60;
     const MAX_DIST = 130;
+    const mouse = { x: -9999, y: -9999 };
 
     const resize = () => {
       w = canvas.width = window.innerWidth;
@@ -17,6 +19,15 @@ export default function BackgroundFX() {
     };
     resize();
     window.addEventListener('resize', resize);
+
+    const onMouseMove = (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      if (glowRef.current) {
+        glowRef.current.style.transform = `translate(${e.clientX - 250}px, ${e.clientY - 250}px)`;
+      }
+    };
+    window.addEventListener('mousemove', onMouseMove);
 
     const particles = Array.from({ length: COUNT }, () => ({
       x: Math.random() * w,
@@ -56,6 +67,18 @@ export default function BackgroundFX() {
             ctx.stroke();
           }
         }
+        // 粒子与鼠标的连线，增强互动感
+        const mdx = particles[i].x - mouse.x;
+        const mdy = particles[i].y - mouse.y;
+        const mdist = Math.hypot(mdx, mdy);
+        if (mdist < 160) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `rgba(${rgb},${((1 - mdist / 160) * 0.5).toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
       }
       raf = requestAnimationFrame(draw);
     };
@@ -64,12 +87,18 @@ export default function BackgroundFX() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
     };
   }, []);
 
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
       <canvas ref={canvasRef} className="absolute inset-0" />
+      {/* 跟随鼠标的柔光 */}
+      <div
+        ref={glowRef}
+        className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-indigo-500/10 dark:bg-purple-500/15 blur-3xl will-change-transform"
+      />
       <div className="bg-blob w-[520px] h-[520px] bg-indigo-400/40 dark:bg-indigo-600/20 top-[-10%] left-[-6%]" />
       <div
         className="bg-blob w-[440px] h-[440px] bg-fuchsia-400/30 dark:bg-fuchsia-600/15 bottom-[-12%] right-[-6%]"

@@ -62,6 +62,28 @@ body {
   animation: caret-blink 1s step-end infinite;
 }
 
+/* Shimmer gradient text */
+@keyframes shimmer-move {
+  to { background-position: 200% center; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, #a5b4fc, #e879f9, #67e8f9, #a5b4fc);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-move 4s linear infinite;
+}
+
+/* Avatar breathing glow */
+@keyframes avatar-glow {
+  0%, 100% { box-shadow: 0 0 12px 2px rgba(129, 140, 248, 0.45); }
+  50% { box-shadow: 0 0 24px 8px rgba(192, 132, 252, 0.6); }
+}
+.avatar-glow {
+  animation: avatar-glow 3s ease-in-out infinite;
+}
+
 /* Markdown article typography */
 .markdown-body {
   line-height: 1.8;

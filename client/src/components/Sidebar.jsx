@@ -39,7 +39,7 @@ export default function Sidebar() {
         <img
           src="/avatar.jpg"
           alt="ぃ你若不离丶"
-          className="w-20 h-20 mx-auto rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+          className="w-20 h-20 mx-auto rounded-full object-cover ring-2 ring-indigo-300 dark:ring-purple-600 avatar-glow"
         />
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mt-3">ぃ你若不离丶</h2>
         <p className="text-xs text-gray-400 mt-1 leading-relaxed">
