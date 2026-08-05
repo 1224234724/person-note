@@ -6,8 +6,8 @@ import { readingTime, wordCount, collectTags } from '../lib/utils.js';
 function DateBadge({ dateStr }) {
   const d = new Date(dateStr);
   return (
-    <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-gray-100 shrink-0">
-      <span className="text-xl font-bold text-gray-900 leading-none">{d.getDate()}</span>
+    <div className="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0">
+      <span className="text-xl font-bold text-gray-900 dark:text-gray-100 leading-none">{d.getDate()}</span>
       <span className="text-[11px] text-gray-400 mt-1">
         {d.getFullYear()}/{String(d.getMonth() + 1).padStart(2, '0')}
       </span>
@@ -87,7 +87,7 @@ export default function Home() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="🔍 搜索文章标题、摘要或标签..."
-          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -95,8 +95,8 @@ export default function Home() {
               onClick={() => setActiveTag('')}
               className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                 activeTag === ''
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400'
+                  ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                  : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 hover:border-gray-400'
               }`}
             >
               全部
@@ -107,8 +107,8 @@ export default function Home() {
                 onClick={() => setActiveTag(activeTag === name ? '' : name)}
                 className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
                   activeTag === name
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400'
+                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                    : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 hover:border-gray-400'
                 }`}
               >
                 {name} ({count})
@@ -129,12 +129,12 @@ export default function Home() {
         {filtered.map((post) => (
           <article
             key={post.id}
-            className="bg-white rounded-xl border border-gray-200 p-5 md:p-6 flex gap-5 hover:shadow-md hover:border-gray-300 transition-all"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex gap-5 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all"
           >
             <DateBadge dateStr={post.created_at} />
             <div className="min-w-0 flex-1">
               <Link to={`/post/${post.id}`}>
-                <h2 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {post.title}
                 </h2>
               </Link>
@@ -149,7 +149,7 @@ export default function Home() {
                   <button
                     key={tag}
                     onClick={() => setActiveTag(tag)}
-                    className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors"
+                    className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   >
                     # {tag}
                   </button>

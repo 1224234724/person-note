@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { request } from '../lib/api.js';
 import { collectTags, formatDate, wordCount } from '../lib/utils.js';
 
-const cardCls = 'bg-white rounded-xl border border-gray-200 p-5';
-const titleCls = 'font-semibold text-gray-900 text-sm mb-3';
+const cardCls =
+  'bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5';
+const titleCls = 'font-semibold text-gray-900 dark:text-gray-100 text-sm mb-3';
 
 export default function Sidebar() {
   const location = useLocation();
@@ -38,23 +39,23 @@ export default function Sidebar() {
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-gray-900 to-gray-600 text-white flex items-center justify-center text-2xl font-bold">
           我
         </div>
-        <h2 className="font-bold text-gray-900 mt-3">博主昵称</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 mt-3">博主昵称</h2>
         <p className="text-xs text-gray-400 mt-1 leading-relaxed">
           记录学习、技术与生活
           <br />
           输出是最好的输入
         </p>
-        <div className="grid grid-cols-3 divide-x divide-gray-100 mt-4 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <div>
-            <p className="font-bold text-gray-900">{posts.length}</p>
+            <p className="font-bold text-gray-900 dark:text-gray-100">{posts.length}</p>
             <p className="text-[11px] text-gray-400">文章</p>
           </div>
           <div>
-            <p className="font-bold text-gray-900">{tags.length}</p>
+            <p className="font-bold text-gray-900 dark:text-gray-100">{tags.length}</p>
             <p className="text-[11px] text-gray-400">标签</p>
           </div>
           <div>
-            <p className="font-bold text-gray-900">{totalChars}</p>
+            <p className="font-bold text-gray-900 dark:text-gray-100">{totalChars}</p>
             <p className="text-[11px] text-gray-400">字数</p>
           </div>
         </div>
@@ -67,7 +68,7 @@ export default function Sidebar() {
           {posts.slice(0, 5).map((post) => (
             <li key={post.id}>
               <Link to={`/post/${post.id}`} className="block group">
-                <p className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors line-clamp-1">
+                <p className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                   {post.title}
                 </p>
                 <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(post.created_at)}</p>
@@ -86,7 +87,7 @@ export default function Sidebar() {
             <Link
               key={name}
               to={`/?tag=${encodeURIComponent(name)}`}
-              className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full hover:bg-gray-900 hover:text-white transition-colors"
+              className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
             >
               {name} ({count})
             </Link>
@@ -103,7 +104,7 @@ export default function Sidebar() {
             <li key={year}>
               <Link
                 to="/archive"
-                className="flex items-center justify-between text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <span>{year} 年</span>
                 <span className="text-xs text-gray-400">{count} 篇</span>
@@ -123,18 +124,21 @@ export default function Sidebar() {
               href="https://gitee.com/wangyu-0312/person-note"
               target="_blank"
               rel="noreferrer"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               Gitee 仓库 ↗
             </a>
           </li>
           <li>
-            <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
+            <Link
+              to="/about"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               关于博主
             </Link>
           </li>
         </ul>
-        <p className="text-[11px] text-gray-300 mt-4 leading-relaxed">
+        <p className="text-[11px] text-gray-300 dark:text-gray-600 mt-4 leading-relaxed">
           React + Node.js + MySQL
           <br />
           从零开始自主开发

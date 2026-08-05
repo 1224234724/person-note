@@ -6,13 +6,15 @@ export default function Admin() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState(null);
+  const [comments, setComments] = useState([]);
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
-    Promise.all([request('/posts'), request('/stats')])
-      .then(([list, s]) => {
+    Promise.all([request('/posts'), request('/stats'), request('/comments')])
+      .then(([list, s, cs]) => {
         setPosts(list);
         setStats(s);
+        setComments(cs);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -28,6 +30,16 @@ export default function Admin() {
     if (!window.confirm(`确定要删除《${post.title}》吗？此操作不可恢复。`)) return;
     try {
       await request(`/posts/${post.id}`, { method: 'DELETE' });
+      load();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  async function handleDeleteComment(comment) {
+    if (!window.confirm(`确定删除 ${comment.nickname} 的评论吗？`)) return;
+    try {
+      await request(`/comments/${comment.id}`, { method: 'DELETE' });
       load();
     } catch (e) {
       alert(e.message);
@@ -117,6 +129,36 @@ export default function Admin() {
                   删除
                 </button>
               </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Comment moderation */}
+        <h2 className="font-semibold text-gray-900 mt-10 mb-4">评论管理（{comments.length}）</h2>
+        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+          {comments.length === 0 && (
+            <p className="text-gray-400 text-sm text-center py-10">还没有评论</p>
+          )}
+          {comments.map((c) => (
+            <div key={c.id} className="p-4 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm text-gray-900">
+                  <span className="font-medium">{c.nickname}</span>
+                  <span className="text-xs text-gray-400 ml-2">
+                    {new Date(c.created_at).toLocaleString('zh-CN')}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600 mt-1 break-words">{c.content}</p>
+                {c.post_title && (
+                  <p className="text-xs text-gray-400 mt-1">评论于《{c.post_title}》</p>
+                )}
+              </div>
+              <button
+                onClick={() => handleDeleteComment(c)}
+                className="text-sm text-red-500 hover:underline shrink-0"
+              >
+                删除
+              </button>
             </div>
           ))}
         </div>

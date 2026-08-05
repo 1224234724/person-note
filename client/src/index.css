@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Class-based dark mode: `dark:` utilities apply when <html> has .dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Markdown article typography */
 .markdown-body {
   line-height: 1.8;
@@ -62,3 +65,20 @@
   text-align: left;
 }
 .markdown-body th { background: #f8fafc; }
+
+/* Dark mode overrides for article typography */
+.dark .markdown-body { color: #d1d5db; }
+.dark .markdown-body h1,
+.dark .markdown-body h2,
+.dark .markdown-body h3 { color: #f9fafb; }
+.dark .markdown-body a { color: #60a5fa; }
+.dark .markdown-body blockquote {
+  border-left-color: #475569;
+  background: #1e293b;
+  color: #94a3b8;
+}
+.dark .markdown-body code { background: #334155; color: #e2e8f0; }
+.dark .markdown-body pre { background: #0f172a; }
+.dark .markdown-body th,
+.dark .markdown-body td { border-color: #334155; }
+.dark .markdown-body th { background: #1e293b; }

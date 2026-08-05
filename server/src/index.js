@@ -137,6 +137,60 @@ app.delete('/api/posts/:id', authRequired, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- Comment routes ----------
+
+app.get('/api/posts/:id/comments', async (req, res) => {
+  const [rows] = await pool.query(
+    'SELECT * FROM comments WHERE post_id = ? ORDER BY created_at DESC',
+    [req.params.id]
+  );
+  res.json(rows);
+});
+
+app.post('/api/posts/:id/comments', async (req, res) => {
+  const { nickname, content } = req.body || {};
+  if (!nickname?.trim() || !content?.trim()) {
+    return res.status(400).json({ error: '昵称和评论内容不能为空' });
+  }
+  if (nickname.trim().length > 50) {
+    return res.status(400).json({ error: '昵称最长 50 个字符' });
+  }
+  if (content.trim().length > 1000) {
+    return res.status(400).json({ error: '评论最长 1000 个字符' });
+  }
+  const [[post]] = await pool.query(
+    'SELECT id, published FROM posts WHERE id = ?',
+    [req.params.id]
+  );
+  if (!post || !post.published) {
+    return res.status(404).json({ error: '文章不存在' });
+  }
+  const [result] = await pool.query(
+    'INSERT INTO comments (post_id, nickname, content) VALUES (?, ?, ?)',
+    [post.id, nickname.trim(), content.trim()]
+  );
+  const [[comment]] = await pool.query('SELECT * FROM comments WHERE id = ?', [
+    result.insertId,
+  ]);
+  res.status(201).json(comment);
+});
+
+// Admin: list all comments / delete any comment
+app.get('/api/comments', authRequired, async (_req, res) => {
+  const [rows] = await pool.query(
+    `SELECT c.*, p.title AS post_title FROM comments c
+     LEFT JOIN posts p ON p.id = c.post_id
+     ORDER BY c.created_at DESC`
+  );
+  res.json(rows);
+});
+
+app.delete('/api/comments/:id', authRequired, async (req, res) => {
+  const [result] = await pool.query('DELETE FROM comments WHERE id = ?', [req.params.id]);
+  if (result.affectedRows === 0) return res.status(404).json({ error: '评论不存在' });
+  res.json({ ok: true });
+});
+
 // ---------- Stats (admin dashboard) ----------
 
 app.get('/api/stats', authRequired, async (_req, res) => {

@@ -52,6 +52,17 @@ export async function initDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS comments (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      post_id INT NOT NULL,
+      nickname VARCHAR(50) NOT NULL,
+      content VARCHAR(1000) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_post_id (post_id)
+    )
+  `);
+
   // Default admin account: admin / admin123 (please change after first login)
   const [[{ c: userCount }]] = await pool.query('SELECT COUNT(*) AS c FROM users');
   if (userCount === 0) {
