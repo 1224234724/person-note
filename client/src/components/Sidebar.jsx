@@ -157,7 +157,9 @@ export default function Sidebar() {
           </li>
         </ul>
         <p className="text-[11px] text-gray-300 dark:text-gray-600 mt-4 leading-relaxed">
-          React + Node.js + MySQL
+          React 19 + Vite + Tailwind CSS
+          <br />
+          Node.js + Express + MySQL
           <br />
           从零开始自主开发
         </p>

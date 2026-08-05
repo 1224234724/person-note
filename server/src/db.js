@@ -47,10 +47,21 @@ export async function initDatabase() {
       content TEXT NOT NULL,
       tags VARCHAR(255) NOT NULL DEFAULT '',
       published TINYINT(1) NOT NULL DEFAULT 1,
+      difficulty INT NOT NULL DEFAULT 50,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
+
+  // Migration: add difficulty column to old tables
+  const [[{ c: hasDifficulty }]] = await pool.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns
+     WHERE table_schema = ? AND table_name = 'posts' AND column_name = 'difficulty'`,
+    [DB_NAME]
+  );
+  if (hasDifficulty === 0) {
+    await pool.query('ALTER TABLE posts ADD COLUMN difficulty INT NOT NULL DEFAULT 50');
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS comments (

@@ -7,6 +7,7 @@ import 'highlight.js/styles/github-dark.css';
 import { request } from '../lib/api.js';
 import { formatDate, readingTime, wordCount } from '../lib/utils.js';
 import Comments from '../components/Comments.jsx';
+import DifficultyBadge from '../components/DifficultyBadge.jsx';
 
 /** Extract h1~h3 headings from markdown, skipping fenced code blocks */
 function parseToc(markdown) {
@@ -105,6 +106,7 @@ export default function PostDetail() {
               <span>{wordCount(post.content)} 字</span>
               <span>·</span>
               <span>约 {readingTime(post.content)} 分钟读完</span>
+              <DifficultyBadge difficulty={post.difficulty} />
               {post.tags.map((tag) => (
                 <span
                   key={tag}

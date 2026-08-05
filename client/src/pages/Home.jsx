@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '../lib/api.js';
 import { readingTime, wordCount, collectTags } from '../lib/utils.js';
 import FadeIn from '../components/FadeIn.jsx';
+import DifficultyBadge from '../components/DifficultyBadge.jsx';
 
 // 首页打字机轮播文案
 const HERO_WORDS = ['记录学习、技术与生活 ✦', '探索前端与 JavaScript 的世界', '输出是最好的输入', 'Stay hungry, stay foolish'];
@@ -75,10 +76,15 @@ export default function Home() {
     () => posts.reduce((sum, p) => sum + wordCount(p.content), 0),
     [posts]
   );
+  // 按难度从浅到深排序
+  const byDifficulty = useMemo(
+    () => [...posts].sort((a, b) => (a.difficulty ?? 50) - (b.difficulty ?? 50)),
+    [posts]
+  );
 
   const filtered = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
-    return posts.filter((post) => {
+    return byDifficulty.filter((post) => {
       if (activeTag && !post.tags.includes(activeTag)) return false;
       if (!kw) return true;
       return (
@@ -87,7 +93,7 @@ export default function Home() {
         post.tags.some((t) => t.toLowerCase().includes(kw))
       );
     });
-  }, [posts, keyword, activeTag]);
+  }, [byDifficulty, keyword, activeTag]);
 
   if (loading) return <p className="text-gray-400 text-center py-20">加载中...</p>;
   if (error) return <p className="text-red-500 text-center py-20">出错了：{error}</p>;
@@ -163,6 +169,11 @@ export default function Home() {
       </section>
 
       {/* Post list */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100">📖 全部文章</h2>
+        <span className="text-xs text-gray-400">按难度从浅到深排序，循序渐进 ↓</span>
+      </div>
+
       {filtered.length === 0 && (
         <p className="text-gray-400 text-center py-20">
           {posts.length === 0 ? '还没有文章，快去后台写第一篇吧！' : '没有找到匹配的文章'}
@@ -184,6 +195,7 @@ export default function Home() {
                   {post.summary || post.content.slice(0, 100)}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-400">
+                  <DifficultyBadge difficulty={post.difficulty} />
                   <span>约 {readingTime(post.content)} 分钟读完</span>
                   <span>·</span>
                   <span>{wordCount(post.content)} 字</span>

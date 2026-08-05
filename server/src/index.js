@@ -106,12 +106,13 @@ app.get('/api/posts/:id', authOptional, async (req, res) => {
 });
 
 app.post('/api/posts', authRequired, async (req, res) => {
-  const { title, summary = '', content = '', tags = [], published = 1 } = req.body || {};
+  const { title, summary = '', content = '', tags = [], published = 1, difficulty = 50 } =
+    req.body || {};
   if (!title?.trim()) return res.status(400).json({ error: '标题不能为空' });
   const tagStr = Array.isArray(tags) ? tags.join(',') : String(tags);
   const [result] = await pool.query(
-    'INSERT INTO posts (title, summary, content, tags, published) VALUES (?, ?, ?, ?, ?)',
-    [title.trim(), summary, content, tagStr, published ? 1 : 0]
+    'INSERT INTO posts (title, summary, content, tags, published, difficulty) VALUES (?, ?, ?, ?, ?, ?)',
+    [title.trim(), summary, content, tagStr, published ? 1 : 0, Number(difficulty) || 50]
   );
   const [rows] = await pool.query('SELECT * FROM posts WHERE id = ?', [result.insertId]);
   res.status(201).json(serializePost(rows[0]));
@@ -120,13 +121,24 @@ app.post('/api/posts', authRequired, async (req, res) => {
 app.put('/api/posts/:id', authRequired, async (req, res) => {
   const [existing] = await pool.query('SELECT id FROM posts WHERE id = ?', [req.params.id]);
   if (existing.length === 0) return res.status(404).json({ error: '文章不存在' });
-  const { title, summary = '', content = '', tags = [], published = 1 } = req.body || {};
+  const { title, summary = '', content = '', tags = [], published = 1, difficulty, created_at } =
+    req.body || {};
   if (!title?.trim()) return res.status(400).json({ error: '标题不能为空' });
   const tagStr = Array.isArray(tags) ? tags.join(',') : String(tags);
-  await pool.query(
-    'UPDATE posts SET title = ?, summary = ?, content = ?, tags = ?, published = ? WHERE id = ?',
-    [title.trim(), summary, content, tagStr, published ? 1 : 0, req.params.id]
-  );
+
+  const sets = ['title = ?', 'summary = ?', 'content = ?', 'tags = ?', 'published = ?'];
+  const params = [title.trim(), summary, content, tagStr, published ? 1 : 0];
+  if (typeof difficulty === 'number') {
+    sets.push('difficulty = ?');
+    params.push(difficulty);
+  }
+  if (created_at) {
+    sets.push('created_at = ?');
+    params.push(created_at);
+  }
+  params.push(req.params.id);
+  await pool.query(`UPDATE posts SET ${sets.join(', ')} WHERE id = ?`, params);
+
   const [rows] = await pool.query('SELECT * FROM posts WHERE id = ?', [req.params.id]);
   res.json(serializePost(rows[0]));
 });
