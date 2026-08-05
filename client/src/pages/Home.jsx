@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '../lib/api.js';
 import { readingTime, wordCount, collectTags } from '../lib/utils.js';
 
@@ -16,11 +16,14 @@ function DateBadge({ dateStr }) {
 }
 
 export default function Home() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [keyword, setKeyword] = useState('');
-  const [activeTag, setActiveTag] = useState('');
+  // Active tag lives in the URL (?tag=xxx) so the sidebar tag cloud can link here
+  const activeTag = searchParams.get('tag') || '';
+  const setActiveTag = (tag) => setSearchParams(tag ? { tag } : {});
 
   useEffect(() => {
     request('/posts')
