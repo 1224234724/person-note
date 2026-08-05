@@ -11,7 +11,7 @@ export default function About() {
           我
         </div>
         <div className="text-center md:text-left">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">博主昵称</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">ぃ你若不离丶</h2>
           <p className="text-sm text-gray-400 mt-0.5">前端开发学习者 / 终身学习者</p>
           <p className="text-sm text-gray-500 mt-2 leading-relaxed">
             你好，欢迎来到我的个人博客！这里记录我的学习笔记、技术总结和生活随笔。
