@@ -14,7 +14,7 @@ services:
       retries: 20
 
   server:
-    image: blog-server:latest
+    image: ${DOCKERHUB_USERNAME}/blog-server:latest
     build: ./server
     restart: always
     depends_on:
@@ -32,7 +32,7 @@ services:
       - uploads-data:/app/uploads
 
   client:
-    image: blog-client:latest
+    image: ${DOCKERHUB_USERNAME}/blog-client:latest
     build: ./client
     restart: always
     ports:
