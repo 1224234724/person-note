@@ -1,7 +1,9 @@
 # ============================================================
 # 企业级 CI/CD 流水线示例（GitHub Actions）
 #
-# 流程：push master → 构建镜像 → 推送 Docker Hub → SSH 部署服务器
+# 流程：push master → 构建镜像 → 推送 Docker Hub
+#       → 镜像打 tar 包 → SCP 传到服务器 → 导入并启动
+# （服务器无法访问 Docker Hub 个人镜像，故采用 tar 包直传方案）
 #
 # 使用前需在 GitHub 仓库 Settings → Secrets 配置：
 #   DOCKERHUB_USERNAME  Docker Hub 用户名
@@ -65,13 +67,36 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/blog-client:${{ github.sha }}
 
   # ---------- 阶段二：CD 部署到生产服务器 ----------
+  # 服务器在国内，连不上 Docker Hub 且加速器不代理个人镜像，
+  # 所以改为：镜像打 tar 包 → SCP 传到服务器 → docker load 导入
   deploy:
     name: 部署到服务器
     runs-on: ubuntu-latest
     needs: build-and-push # 必须等镜像推送成功才执行
     steps:
-      # 通过 SSH 登录服务器，拉新镜像并重启容器（密码方式）
-      - name: SSH 部署
+      # 1. 在构建机上把刚推好的镜像下载下来，打包成单个 tar 文件
+      - name: 打包镜像为 tar 文件
+        run: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/blog-server:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/blog-client:latest
+          docker save -o blog-images.tar \
+            ${{ secrets.DOCKERHUB_USERNAME }}/blog-server:latest \
+            ${{ secrets.DOCKERHUB_USERNAME }}/blog-client:latest
+
+      # 2. 通过 SCP（走 SSH，密码认证）把 tar 包传到服务器
+      - name: 传输镜像包到服务器
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: blog-images.tar
+          target: /opt/blog
+
+      # 3. SSH 登录服务器：导入镜像并启动容器
+      #    --pull never：不去 Docker Hub 拉个人镜像（拉不到）
+      #    mysql 是官方镜像，compose 会自动通过阿里云加速器拉取
+      - name: 导入镜像并启动
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -79,6 +104,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd /opt/blog
-            docker compose pull
-            docker compose up -d
-            docker image prune -f   # 清理旧镜像释放磁盘
+            docker load -i blog-images.tar
+            docker compose up -d --pull never
+            docker image prune -f
+            rm -f blog-images.tar
