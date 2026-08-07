@@ -32,3 +32,7 @@
     记录学习、技术与生活。输出是最好的输入，写下来才能真正想明白。
   </view>
 </view>
+
+<view class="privacy-bar">
+  <text class="privacy-link" bindtap="goPrivacy">隐私政策</text>
+</view>

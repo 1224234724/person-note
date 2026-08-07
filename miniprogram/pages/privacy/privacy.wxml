@@ -1,0 +1,70 @@
+<scroll-view scroll-y class="container">
+  <view class="header">
+    <text class="title">隐私政策</text>
+    <text class="update-time">更新日期：2026年8月7日</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">一、引言</text>
+    <text class="section-content">本隐私政策适用于「我的博客」微信小程序（以下简称"本小程序"）。我们非常重视您的隐私保护，请您在使用本小程序前仔细阅读本政策。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">二、我们收集的信息</text>
+    <text class="section-content">1. 微信登录信息：当您使用微信一键登录时，我们会获取您的微信 OpenID、昵称及头像，用于识别您的身份和展示个人信息。
+
+2. 留言内容：您在留言板填写的内容将存储于服务器，用于展示互动留言。
+
+3. 访问记录：文章的阅读次数等统计数据，不涉及个人身份识别。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">三、信息的使用</text>
+    <text class="section-content">我们收集的信息仅用于以下目的：
+
+• 提供正常的登录和身份识别功能
+• 展示您的昵称和头像
+• 保存您发表的留言内容
+• 统计文章访问量
+
+我们不会将您的信息用于任何商业目的，也不会向第三方出售或共享您的个人信息。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">四、信息的存储与安全</text>
+    <text class="section-content">您的信息存储在安全的服务器上，我们采取合理的技术措施保护您的数据安全，防止未经授权的访问、披露或破坏。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">五、您的权利</text>
+    <text class="section-content">您有权：
+
+• 查看您发表的留言内容
+• 要求删除您的留言
+• 停止使用本小程序，我们不会主动删除您的历史数据，但您可联系我们申请删除</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">六、Cookie 及类似技术</text>
+    <text class="section-content">本小程序使用微信本地存储（Storage）保存您的登录状态 token，仅用于维持登录，不用于追踪您的行为。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">七、未成年人保护</text>
+    <text class="section-content">本小程序为个人博客展示类应用，不针对未成年人收集个人信息。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">八、隐私政策的变更</text>
+    <text class="section-content">如本隐私政策发生重大变更，我们将在小程序内发布更新通知，继续使用本小程序即表示您同意更新后的政策。</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">九、联系我们</text>
+    <text class="section-content">如您对本隐私政策有任何疑问，可通过留言板与我们联系。</text>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">本小程序由个人开发者运营，仅供个人作品展示使用。</text>
+  </view>
+</scroll-view>

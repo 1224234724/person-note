@@ -3,6 +3,7 @@
   flex-direction: column;
   align-items: center;
   padding: 60rpx 28rpx 50rpx;
+
   background: linear-gradient(160deg, #4cc9f0 0%, #7c5cff 55%, #ff6ec7 100%);
   border-radius: 0 0 56rpx 56rpx;
   box-shadow: 0 16rpx 48rpx rgba(124, 92, 255, 0.4);
@@ -68,4 +69,15 @@
 .about-text {
   line-height: 1.7;
   color: #8a85b5;
+}
+
+.privacy-bar {
+  text-align: center;
+  padding: 32rpx 0 60rpx;
+}
+
+.privacy-link {
+  font-size: 24rpx;
+  color: rgba(124, 92, 255, 0.6);
+  text-decoration: underline;
 }

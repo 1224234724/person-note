@@ -69,8 +69,12 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '✦ 我的博客 ✦ 记录学习、技术与生活',
+      title: '❖ 我的博客 ❖ 记录学习、技术与生活',
       path: '/pages/index/index',
     };
+  },
+
+  goPrivacy() {
+    wx.navigateTo({ url: '/pages/privacy/privacy' });
   },
 });

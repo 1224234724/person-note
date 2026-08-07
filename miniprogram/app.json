@@ -4,7 +4,8 @@
     "pages/detail/detail",
     "pages/messages/messages",
     "pages/mine/mine",
-    "pages/admin/admin"
+    "pages/admin/admin",
+    "pages/privacy/privacy"
   ],
   "window": {
     "navigationBarBackgroundColor": "#241f4e",
