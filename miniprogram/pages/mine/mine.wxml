@@ -1,0 +1,34 @@
+<view class="hero">
+  <view class="hero-stars">❄ ✦ ⋆ ❄ ⋆ ✦ ❄</view>
+  <block wx:if="{{user}}">
+    <image class="avatar" src="{{user.avatar || '/images/avatar.jpg'}}" mode="aspectFill" />
+    <view class="name">{{user.nickname || user.username}}</view>
+    <view class="hero-sub">{{user.is_admin ? '管理员 ❄✨' : '欢迎回来～ ❄✨'}}</view>
+
+    <block wx:if="{{user.is_admin}}">
+      <button class="btn" bindtap="goAdmin">🛡 进入管理后台</button>
+    </block>
+    <block wx:else>
+      <button class="btn" bindtap="claimAdmin" disabled="{{claiming}}">
+        {{claiming ? '认领中...' : '✦ 认领管理员 ✦'}}
+      </button>
+    </block>
+
+    <button class="btn logout" bindtap="logout">退出登录</button>
+  </block>
+  <block wx:else>
+    <image class="avatar" src="/images/avatar.jpg" mode="aspectFill" />
+    <view class="name">未登录</view>
+    <view class="hero-sub">登录后可参与互动 ❄</view>
+    <button class="btn" bindtap="login" disabled="{{logging}}">
+      {{logging ? '登录中...' : '微信一键登录'}}
+    </button>
+  </block>
+</view>
+
+<view class="card">
+  <view class="about-title">❄ 关于本站</view>
+  <view class="about-text">
+    记录学习、技术与生活。输出是最好的输入，写下来才能真正想明白。
+  </view>
+</view>

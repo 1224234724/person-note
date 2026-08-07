@@ -69,6 +69,15 @@ function authRequired(req, res, next) {
   }
 }
 
+async function adminRequired(req, res, next) {
+  authRequired(req, res, async (err) => {
+    if (err) return next(err);
+    const [[row]] = await pool.query('SELECT is_admin FROM users WHERE id = ?', [req.user.id]);
+    if (!row || !row.is_admin) return res.status(403).json({ error: '需要管理员权限' });
+    next();
+  });
+}
+
 function authOptional(req, _res, next) {
   const token = getToken(req);
   if (token) {
@@ -97,14 +106,83 @@ app.post('/api/auth/login', async (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: '用户名或密码错误' });
   }
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+  const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin || 0 }, JWT_SECRET, {
     expiresIn: '7d',
   });
-  res.json({ token, username: user.username });
+  res.json({ token, username: user.username, is_admin: user.is_admin || 0 });
 });
 
-app.get('/api/auth/me', authRequired, (req, res) => {
-  res.json({ username: req.user.username });
+app.get('/api/auth/me', authRequired, async (req, res) => {
+  const [rows] = await pool.query('SELECT username, nickname, avatar FROM users WHERE id = ?', [
+    req.user.id,
+  ]);
+  res.json(rows[0] || { username: req.user.username });
+});
+
+// 微信小程序登录：wx.cloud.callContainer 会自动注入 X-WX-OPENID 请求头，
+// 无需 wx.login code 换取，首次登录自动注册（密码随机，即禁用密码登录）
+app.post('/api/auth/wx-login', async (req, res) => {
+  const openid = req.headers['x-wx-openid'];
+  if (!openid) {
+    return res.status(400).json({ error: '缺少微信身份，请通过小程序调用' });
+  }
+  let [rows] = await pool.query('SELECT * FROM users WHERE openid = ?', [openid]);
+  let user = rows[0];
+  if (!user) {
+    await pool.query('INSERT INTO users (username, password, openid) VALUES (?, ?, ?)', [
+      `wx_${openid.slice(-12)}`,
+      bcrypt.hashSync(Math.random().toString(36).slice(2), 10),
+      openid,
+    ]);
+    [rows] = await pool.query('SELECT * FROM users WHERE openid = ?', [openid]);
+    user = rows[0];
+  }
+  const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin || 0 }, JWT_SECRET, {
+    expiresIn: '30d',
+  });
+  res.json({
+    token,
+    username: user.username,
+    nickname: user.nickname || '',
+    avatar: user.avatar || '',
+    openid,
+    is_admin: user.is_admin || 0,
+  });
+});
+
+// 小程序用户认领管理员：微信端仅限第一个调用此接口的登录用户成为管理员
+app.post('/api/auth/claim-admin', authRequired, async (req, res) => {
+  const [[row]] = await pool.query("SELECT value FROM site_settings WHERE `key` = 'wx_admin_claimed'");
+  if (row && row.value === 'true') {
+    return res.status(403).json({ error: '微信端管理员已被认领，无法重复认领' });
+  }
+  await pool.query('UPDATE users SET is_admin = 1 WHERE id = ?', [req.user.id]);
+  await pool.query(
+    "INSERT INTO site_settings (`key`, value) VALUES ('wx_admin_claimed', 'true') ON DUPLICATE KEY UPDATE value = 'true'"
+  );
+  const token = jwt.sign(
+    { id: req.user.id, username: req.user.username, is_admin: 1 },
+    JWT_SECRET,
+    { expiresIn: '30d' }
+  );
+  res.json({ token, is_admin: 1, message: '管理员认领成功' });
+});
+app.put('/api/auth/wx-profile', authRequired, async (req, res) => {
+  const { nickname, avatar } = req.body || {};
+  const sets = [];
+  const params = [];
+  if (typeof nickname === 'string' && nickname.trim()) {
+    sets.push('nickname = ?');
+    params.push(nickname.trim().slice(0, 50));
+  }
+  if (typeof avatar === 'string' && avatar.trim()) {
+    sets.push('avatar = ?');
+    params.push(avatar.trim().slice(0, 500));
+  }
+  if (!sets.length) return res.status(400).json({ error: '没有可更新的内容' });
+  params.push(req.user.id);
+  await pool.query(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`, params);
+  res.json({ ok: true });
 });
 
 app.put('/api/auth/password', authRequired, async (req, res) => {
@@ -238,7 +316,7 @@ app.post('/api/posts/:id/comments', async (req, res) => {
 });
 
 // Admin: list all comments / delete any comment
-app.get('/api/comments', authRequired, async (_req, res) => {
+app.get('/api/comments', adminRequired, async (_req, res) => {
   const [rows] = await pool.query(
     `SELECT c.*, p.title AS post_title FROM comments c
      LEFT JOIN posts p ON p.id = c.post_id
@@ -247,7 +325,7 @@ app.get('/api/comments', authRequired, async (_req, res) => {
   res.json(rows);
 });
 
-app.delete('/api/comments/:id', authRequired, async (req, res) => {
+app.delete('/api/comments/:id', adminRequired, async (req, res) => {
   const [result] = await pool.query('DELETE FROM comments WHERE id = ?', [req.params.id]);
   if (result.affectedRows === 0) return res.status(404).json({ error: '评论不存在' });
   res.json({ ok: true });
@@ -255,7 +333,7 @@ app.delete('/api/comments/:id', authRequired, async (req, res) => {
 
 // ---------- Stats (admin dashboard) ----------
 
-app.get('/api/stats', authRequired, async (_req, res) => {
+app.get('/api/stats', adminRequired, async (_req, res) => {
   const [[t]] = await pool.query('SELECT COUNT(*) AS c FROM posts');
   const [[p]] = await pool.query('SELECT COUNT(*) AS c FROM posts WHERE published = 1');
   res.json({ total: t.c, published: p.c, draft: t.c - p.c });
@@ -268,7 +346,7 @@ app.get('/api/site', async (_req, res) => {
   res.json(Object.fromEntries(rows.map((r) => [r.key, r.value])));
 });
 
-app.put('/api/site', authRequired, async (req, res) => {
+app.put('/api/site', adminRequired, async (req, res) => {
   const body = req.body || {};
   const entries = Object.entries(body).filter(
     ([k, v]) => typeof k === 'string' && typeof v === 'string'
@@ -330,14 +408,14 @@ app.post('/api/messages', async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
-app.delete('/api/messages/:id', authRequired, async (req, res) => {
+app.delete('/api/messages/:id', adminRequired, async (req, res) => {
   await pool.query('DELETE FROM messages WHERE id = ?', [req.params.id]);
   res.json({ ok: true });
 });
 
 // ---------- Image upload ----------
 
-app.post('/api/upload', authRequired, (req, res) => {
+app.post('/api/upload', adminRequired, (req, res) => {
   upload.single('file')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: '请选择图片' });
@@ -358,7 +436,7 @@ app.get('/api/resume', async (_req, res) => {
 });
 
 // 上传/替换简历（旧文件会被删除）
-app.post('/api/resume', authRequired, (req, res) => {
+app.post('/api/resume', adminRequired, (req, res) => {
   resumeUpload.single('file')(req, res, async (err) => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: '请选择 PDF 文件' });
@@ -379,7 +457,7 @@ app.post('/api/resume', authRequired, (req, res) => {
 });
 
 // 删除简历
-app.delete('/api/resume', authRequired, async (_req, res) => {
+app.delete('/api/resume', adminRequired, async (_req, res) => {
   const [rows] = await pool.query('SELECT value FROM site_settings WHERE `key` = ?', [
     RESUME_KEY,
   ]);
@@ -390,6 +468,10 @@ app.delete('/api/resume', authRequired, async (_req, res) => {
   }
   res.json({ ok: true });
 });
+
+// ---------- Health check（云托管/负载均衡探活用） ----------
+
+app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
 // ---------- Start ----------
 

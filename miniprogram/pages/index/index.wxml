@@ -1,0 +1,39 @@
+<view class="banner">
+  <image src="/images/banner.jpg" mode="aspectFill" class="banner-img" />
+  <view class="banner-mask"></view>
+  <view class="banner-text">
+    <view class="banner-title">✦❄ 我的博客 ❄✦</view>
+    <view class="banner-sub">❆ 记录学习、技术与生活的小世界 ❆</view>
+  </view>
+</view>
+
+<view class="particles">
+  <text class="p p1">❄</text>
+  <text class="p p2">✦</text>
+  <text class="p p3">❄</text>
+  <text class="p p4">✧</text>
+  <text class="p p5">❄</text>
+  <text class="p p6">✦</text>
+  <text class="p p7">❄</text>
+  <text class="p p8">✧</text>
+</view>
+
+<view wx:if="{{loading}}" class="empty">加载中...🌸</view>
+<view wx:elif="{{!posts.length}}" class="empty">暂无文章</view>
+
+<view
+  wx:for="{{posts}}"
+  wx:key="id"
+  class="card"
+  data-id="{{item.id}}"
+  bindtap="goDetail"
+>
+  <view class="title">{{item.title}}</view>
+  <view class="summary">{{item.summary}}</view>
+  <view class="meta">
+    <view>
+      <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="tag">{{tag}}</text>
+    </view>
+    <text class="muted">{{item.date}} · {{item.views}} 阅读</text>
+  </view>
+</view>

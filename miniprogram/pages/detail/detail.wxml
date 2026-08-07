@@ -1,0 +1,17 @@
+<view wx:if="{{!post}}" class="empty">加载中...</view>
+
+<view wx:else class="wrap">
+  <view class="title gradient-text">{{post.title}}</view>
+  <view class="meta">
+    <text wx:for="{{post.tags}}" wx:key="*this" class="tag">{{item}}</text>
+    <text class="muted">{{post.date}} · {{post.views}} 阅读</text>
+  </view>
+  <view class="divider"></view>
+  <mp-html content="{{html}}" selectable="{{true}}" />
+  <view class="like-row">
+    <view class="like-btn {{liked ? 'liked' : ''}}" bindtap="toggleLike">
+      <text class="like-icon">{{liked ? '❤️' : '🤍'}}</text>
+      <text class="like-count">{{post.likes}}</text>
+    </view>
+  </view>
+</view>

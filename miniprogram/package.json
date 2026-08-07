@@ -1,0 +1,9 @@
+{
+  "name": "person-note-miniprogram",
+  "version": "1.0.0",
+  "description": "个人博客微信小程序客户端",
+  "dependencies": {
+    "marked": "^4.3.0",
+    "mp-html": "^2.4.3"
+  }
+}

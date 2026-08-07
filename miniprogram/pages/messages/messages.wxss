@@ -1,0 +1,61 @@
+.form .input {
+  background: #eef1ff;
+  border-radius: 999rpx;
+  padding: 18rpx 28rpx;
+  font-size: 28rpx;
+  border: 2rpx solid rgba(124, 92, 255, 0.18);
+}
+
+.form .textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #eef1ff;
+  border-radius: 24rpx;
+  padding: 20rpx 28rpx;
+  font-size: 28rpx;
+  height: 160rpx;
+  margin: 20rpx 0;
+  border: 2rpx solid rgba(124, 92, 255, 0.18);
+}
+
+.msg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.msg-user {
+  display: flex;
+  align-items: center;
+}
+
+.msg-dot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4cc9f0, #7c5cff);
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(124, 92, 255, 0.35);
+}
+
+.msg-name {
+  font-weight: 600;
+  color: #6a5cff;
+}
+
+.msg-content {
+  margin-top: 16rpx;
+  line-height: 1.7;
+  word-break: break-all;
+  color: #4a4672;
+  background: rgba(238, 241, 255, 0.7);
+  border-radius: 20rpx;
+  padding: 18rpx 22rpx;
+  border: 2rpx solid rgba(124, 92, 255, 0.1);
+}

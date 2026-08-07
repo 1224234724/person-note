@@ -1,0 +1,30 @@
+<view class="card stats-card">
+  <view class="stats-title">📊 站点统计</view>
+  <view class="stats-grid">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.total || 0}}</text>
+      <text class="stat-label">总文章</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.published || 0}}</text>
+      <text class="stat-label">已发布</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.draft || 0}}</text>
+      <text class="stat-label">草稿</text>
+    </view>
+  </view>
+</view>
+
+<view class="card">
+  <view class="stats-title">🗑 留言管理</view>
+  <view wx:if="{{!messages.length}}" class="empty">暂无留言</view>
+  <view wx:for="{{messages}}" wx:key="id" class="msg-row">
+    <view class="msg-info">
+      <text class="msg-name">{{item.nickname}}</text>
+      <text class="muted">{{item.date}}</text>
+    </view>
+    <view class="msg-content">{{item.content}}</view>
+    <button class="del-btn" size="mini" data-id="{{item.id}}" bindtap="deleteMsg">删除</button>
+  </view>
+</view>

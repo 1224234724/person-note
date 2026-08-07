@@ -1,0 +1,34 @@
+<view class="card form">
+  <input
+    class="input"
+    placeholder="你的昵称"
+    value="{{nickname}}"
+    data-field="nickname"
+    bindinput="onInput"
+    maxlength="50"
+  />
+  <textarea
+    class="textarea"
+    placeholder="说点什么吧...✨"
+    value="{{content}}"
+    data-field="content"
+    bindinput="onInput"
+    maxlength="500"
+  />
+  <button class="btn" bindtap="send" disabled="{{sending}}">
+    {{sending ? '发送中...' : '发表留言'}}
+  </button>
+</view>
+
+<view wx:if="{{!messages.length}}" class="empty">还没有留言，来抢沙发~🌸</view>
+
+<view wx:for="{{messages}}" wx:key="id" class="card msg">
+  <view class="msg-head">
+    <view class="msg-user">
+      <view class="msg-dot">{{item.nickname[0]}}</view>
+      <text class="msg-name">{{item.nickname}}</text>
+    </view>
+    <text class="muted">{{item.date}}</text>
+  </view>
+  <view class="msg-content">{{item.content}}</view>
+</view>

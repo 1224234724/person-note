@@ -50,6 +50,26 @@ export async function initDatabase() {
     )
   `);
 
+  // Migration: extend users table for WeChat mini-program login
+  const [userCols] = await pool.query(
+    `SELECT column_name FROM information_schema.columns
+     WHERE table_schema = ? AND table_name = 'users'`,
+    [DB_NAME]
+  );
+  const ucols = new Set(userCols.map((r) => r.COLUMN_NAME || r.column_name));
+  if (!ucols.has('openid')) {
+    await pool.query('ALTER TABLE users ADD COLUMN openid VARCHAR(64) UNIQUE');
+  }
+  if (!ucols.has('nickname')) {
+    await pool.query("ALTER TABLE users ADD COLUMN nickname VARCHAR(50) NOT NULL DEFAULT ''");
+  }
+  if (!ucols.has('avatar')) {
+    await pool.query("ALTER TABLE users ADD COLUMN avatar VARCHAR(500) NOT NULL DEFAULT ''");
+  }
+  if (!ucols.has('is_admin')) {
+    await pool.query('ALTER TABLE users ADD COLUMN is_admin TINYINT(1) NOT NULL DEFAULT 0');
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS posts (
       id INT PRIMARY KEY AUTO_INCREMENT,
@@ -150,10 +170,14 @@ export async function initDatabase() {
   // Default admin account: wangyu / hhxxttxs (please change after deployment)
   const [[{ c: userCount }]] = await pool.query('SELECT COUNT(*) AS c FROM users');
   if (userCount === 0) {
-    await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [
+    await pool.query('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)', [
       'wangyu',
       bcrypt.hashSync('hhxxttxs', 10),
+      1,
     ]);
+  } else {
+    // 老数据迁移：把默认管理员账号标记为管理员
+    await pool.query("UPDATE users SET is_admin = 1 WHERE username = 'wangyu' AND is_admin = 0");
   }
 
   // Welcome post for first-time visitors
