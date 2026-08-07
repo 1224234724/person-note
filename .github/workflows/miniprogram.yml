@@ -16,7 +16,7 @@ jobs:
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: 安装 miniprogram-ci
         run: npm install -g miniprogram-ci
@@ -33,4 +33,4 @@ jobs:
             --appid wx4ea3864702b0d83b \
             --uv "1.0.${{ github.run_number }}" \
             --desc "Auto upload from GitHub Actions — ${{ github.sha }}" \
-            -r 1
+            -r 1 || (echo "=== upload failed, dump key head ==="; head -2 /tmp/wx_upload.key; exit 1)
