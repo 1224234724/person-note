@@ -22,3 +22,7 @@ server/uploads/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Expo / React Native
+mobileapp/.expo/
+mobileapp/node_modules/
