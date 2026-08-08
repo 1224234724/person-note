@@ -19,7 +19,6 @@ Page({
       const posts = await api.get('/api/posts');
       this.setData({
         posts: posts
-          .filter((p) => p.published)
           .map((p) => ({ ...p, date: (p.created_at || '').slice(0, 10) })),
         loading: false,
       });
